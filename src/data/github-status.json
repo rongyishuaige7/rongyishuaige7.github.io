@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-07-14T16:56:25.197Z",
+  "source": "GitHub REST API",
+  "repositories": {
+    "yipan-showcase": {
+      "repo": "yipan-showcase",
+      "url": "https://github.com/rongyishuaige7/yipan-showcase",
+      "description": "Yi盘 — portable AI agent workspace, public product facts, roadmap, and engineering retrospectives.",
+      "license": null,
+      "language": null,
+      "pushedAt": "2026-07-14T13:08:40Z",
+      "ci": null,
+      "release": null
+    },
+    "problem-solution-recorder-oss": {
+      "repo": "problem-solution-recorder-oss",
+      "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss",
+      "description": "Agent skill + scripts for a Markdown problem-solution knowledge base: records, dual indexes, patterns, reviews; Codex, Claude, Cursor, OpenClaw.",
+      "license": "MIT",
+      "language": "Shell",
+      "pushedAt": "2026-07-14T14:13:14Z",
+      "ci": {
+        "conclusion": "success",
+        "status": "completed",
+        "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/actions/runs/29339563306",
+        "headSha": "4c54b1aa9d001eb9f192b988281d5c24d322783a"
+      },
+      "release": {
+        "tag": "v0.2.0",
+        "publishedAt": "2026-07-14T14:13:26Z",
+        "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/releases/tag/v0.2.0"
+      }
+    },
+    "devflow-recorder": {
+      "repo": "devflow-recorder",
+      "url": "https://github.com/rongyishuaige7/devflow-recorder",
+      "description": "Local-first developer activity recorder for GNOME Wayland, built with Tauri, React, Rust, and SQLite.",
+      "license": "MIT",
+      "language": "Rust",
+      "pushedAt": "2026-07-14T14:07:49Z",
+      "ci": {
+        "conclusion": "success",
+        "status": "completed",
+        "url": "https://github.com/rongyishuaige7/devflow-recorder/actions/runs/29339471902",
+        "headSha": "978f8739946e506fd1c5867c93465493a64a1e7e"
+      },
+      "release": null
+    },
+    "ESP32_RPS_Game": {
+      "repo": "ESP32_RPS_Game",
+      "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game",
+      "description": "ESP32-S3 rock-paper-scissors game with OV3660 vision, OLED, audio, RGB LED, and optional MJPEG streaming.",
+      "license": "MIT",
+      "language": "C++",
+      "pushedAt": "2026-07-14T14:07:55Z",
+      "ci": {
+        "conclusion": "success",
+        "status": "completed",
+        "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29339478819",
+        "headSha": "7cc39bd4ace77febee17320fe8a2efd8ac06b205"
+      },
+      "release": null
+    },
+    "pet-desktop-tauri": {
+      "repo": "pet-desktop-tauri",
+      "url": "https://github.com/rongyishuaige7/pet-desktop-tauri",
+      "description": "Local-first Linux desktop pet prototype built with Tauri, React, Rust, GTK, and native transparent windows.",
+      "license": "MIT",
+      "language": "TypeScript",
+      "pushedAt": "2026-07-14T14:07:52Z",
+      "ci": {
+        "conclusion": "success",
+        "status": "completed",
+        "url": "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/29339475309",
+        "headSha": "91f34dc9307b00eb704559de4d2a2a123b4b7496"
+      },
+      "release": null
+    }
+  }
+}

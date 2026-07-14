@@ -1,0 +1,259 @@
+---
+import "@fontsource-variable/geist/index.css";
+import "../styles/global.css";
+import { projects } from "../data/projects";
+import { buildLog } from "../data/build-log";
+import githubStatus from "../data/github-status.json";
+
+const refreshedAt = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+}).format(new Date(githubStatus.generatedAt));
+
+const repoStatus = githubStatus.repositories as Record<string, {
+  ci: null | { conclusion: string | null; status: string; url: string };
+  release: null | { tag: string; url: string };
+}>;
+
+function signalFor(slug: string) {
+  const signal = repoStatus[slug];
+  if (!signal) return null;
+  if (signal.release?.tag) return { label: `${signal.release.tag} released`, href: signal.release.url, tone: "release" };
+  if (signal.ci?.conclusion === "success") return { label: "Latest CI passed", href: signal.ci.url, tone: "pass" };
+  if (signal.ci?.status === "in_progress") return { label: "CI running", href: signal.ci.url, tone: "running" };
+  if (signal.ci) return { label: "Check latest CI", href: signal.ci.url, tone: "neutral" };
+  return null;
+}
+
+const principles = [
+  ["01", "真实状态，不做假按钮。", "状态、统计与操作结果必须来自真实文件、索引、进程或 API。"],
+  ["02", "先验证，再发布。", "代码完成只是中间状态；CI、产物、目标环境与失败路径都要留下证据。"],
+  ["03", "本地优先，不虚构离线智能。", "资料与治理层尽量留在本地；模型、网络与凭据边界明确说明。"],
+  ["04", "先确认，再沉淀。", "进入 Inbox 不等于长期记忆，用户保留确认、撤回与删除的决定权。"],
+  ["05", "轻量、可靠、低售后负担。", "不把内部复杂度转嫁给用户；失败应该可解释、可恢复。"]
+];
+
+const title = "Rongyi — Yi盘 Founder & Product Builder";
+const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、本地优先的 AI Agent 产品、知识系统、桌面工具与软硬件交付。";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#07090d" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://rongyishuaige7.github.io/" />
+    <meta property="og:title" content="Rongyi / Founder Lab" />
+    <meta property="og:description" content="Portable AI context. Local-first systems. Products built for real work." />
+    <meta property="og:image" content="https://rongyishuaige7.github.io/og-card.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://rongyishuaige7.github.io/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <header class="site-header" data-header>
+      <a class="wordmark" href="#top" aria-label="Rongyi 首页">
+        <span>R</span><b>RONGYI</b><small>/ FOUNDER LAB</small>
+      </a>
+      <nav aria-label="主导航">
+        <a href="#work">作品</a>
+        <a href="#principles">原则</a>
+        <a href="#log">日志</a>
+      </nav>
+      <a class="header-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" data-section="00">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><span class="pulse"></span> FOUNDER · BUILDER · HANGZHOU</p>
+          <h1>让 AI 的上下文，<br /><em>跟着人走。</em></h1>
+          <p class="hero-en">Make AI context move with you.</p>
+          <p class="hero-intro">我是 Rongyi，Yi盘创始人。我在构建便携、本地优先、能被真实验证和交付的 AI Agent 产品与开发者工具。</p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/rongyishuaige7/yipan-showcase" target="_blank" rel="noreferrer">查看 Yi盘 <span>↗</span></a>
+            <a class="button secondary" href="#work">浏览作品 <span>↓</span></a>
+          </div>
+        </div>
+
+        <div class="context-machine reveal" aria-label="上下文从本地资料经由 Yi盘流向受管 AI Agent 的抽象示意">
+          <div class="machine-topline">
+            <span>CONTEXT ROUTER</span>
+            <span class="online"><i></i> CONTROLLED BETA</span>
+          </div>
+          <div class="machine-grid" aria-hidden="true">
+            <div class="source-stack">
+              <div class="source"><span>01</span><b>WORK</b><small>任务 / 产出</small></div>
+              <div class="source"><span>02</span><b>KNOWLEDGE</b><small>长期资料</small></div>
+              <div class="source"><span>03</span><b>CONTEXT</b><small>项目背景</small></div>
+            </div>
+            <div class="route route-left"><i class="packet packet-a"></i><i class="packet packet-b"></i></div>
+            <div class="yipan-core">
+              <span class="core-orbit orbit-a"></span><span class="core-orbit orbit-b"></span>
+              <div class="core-mark">YI<span>盘</span></div>
+              <small>PORTABLE<br />WORKSPACE</small>
+            </div>
+            <div class="route route-right"><i class="packet packet-c"></i></div>
+            <div class="agent-stack">
+              <div><i></i><b>AGENT 01</b><small>READY</small></div>
+              <div><i></i><b>AGENT 02</b><small>READY</small></div>
+              <div><i></i><b>AGENT 03</b><small>MANAGED</small></div>
+            </div>
+          </div>
+          <div class="machine-footer"><span>LOCAL DATA LAYER</span><span>USER CONTROLLED</span><span>CLOUD MODEL OPTIONAL</span></div>
+        </div>
+
+        <div class="scroll-note" aria-hidden="true"><span></span> SCROLL TO TRACE THE WORK</div>
+      </section>
+
+      <section class="manifesto section-shell reveal" aria-labelledby="manifesto-title">
+        <div class="section-index">00 / POSITION</div>
+        <div>
+          <p class="eyebrow">BUILDER, NOT JUST A DEMO MAKER.</p>
+          <h2 id="manifesto-title">不止做演示，<br />更把产品做成<span>可交付系统。</span></h2>
+        </div>
+        <p>我关注 AI Agent 产品化、本地优先知识系统、桌面应用与软硬件交付。比起堆叠功能，我更在意真实状态、明确边界与失败后的恢复。</p>
+        <div class="skill-strip" aria-label="关注方向">
+          <span>AI AGENT PRODUCTIZATION</span><span>LOCAL-FIRST SYSTEMS</span><span>DESKTOP & EMBEDDED</span><span>RELEASE DISCIPLINE</span>
+        </div>
+      </section>
+
+      <section class="work section-shell" id="work" aria-labelledby="work-title" data-section="01">
+        <div class="section-heading reveal">
+          <div><p class="section-index">01 / SELECTED WORK</p><h2 id="work-title">正在构建的东西</h2></div>
+          <p>产品不是概念图。这里展示公开事实、当前边界和可以检查的工程证据。</p>
+        </div>
+
+        {projects.map((project) => {
+          const signal = signalFor(project.slug);
+          return project.featured ? (
+            <article class="project-featured reveal">
+              <div class="project-main">
+                <p class="eyebrow">{project.eyebrow}</p>
+                <h3>{project.name}</h3>
+                <p class="project-summary">{project.summary}</p>
+                <div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
+                <div class="project-links">
+                  <a class="button primary" href={project.href} target="_blank" rel="noreferrer">查看公开仓库 <span>↗</span></a>
+                  <span class="status active"><i></i>{project.status}</span>
+                </div>
+                {project.caveat && <p class="caveat">边界说明 · {project.caveat}</p>}
+              </div>
+              <div class="yipan-blueprint" aria-label="Yi盘公开能力结构示意，不是产品截图">
+                <div class="blueprint-label">PUBLIC CAPABILITY MAP · NOT A PRODUCT SCREENSHOT</div>
+                <div class="drive-body">
+                  <div class="drive-port"><i></i><i></i><i></i></div>
+                  <div class="drive-face">
+                    <b>YI<span>盘</span></b><small>PORTABLE AGENT WORKSPACE</small>
+                    <div class="drive-lines"><i></i><i></i><i></i></div>
+                  </div>
+                </div>
+                <div class="capability-row"><span>INBOX</span><span>VAULT</span><span>AGENTS</span><span>BYOK</span></div>
+                <div class="proof-note"><i></i> REAL PRODUCT MEDIA WILL REPLACE THIS ABSTRACT MAP</div>
+              </div>
+            </article>
+          ) : (
+            <article class="project-row reveal">
+              <div class="project-number">{project.index}</div>
+              <div class="project-copy">
+                <p class="eyebrow">{project.eyebrow}</p>
+                <h3>{project.name}</h3>
+                <p>{project.summary}</p>
+                {project.caveat && <small class="caveat">{project.caveat}</small>}
+              </div>
+              <div class="project-meta">
+                <div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
+                {signal ? <a class={`live-signal ${signal.tone}`} href={signal.href} target="_blank" rel="noreferrer"><i></i>{signal.label} ↗</a> : <span class="status"><i></i>{project.status}</span>}
+              </div>
+              <a class="project-arrow" href={project.href} target="_blank" rel="noreferrer" aria-label={`打开 ${project.name} 仓库`}>↗</a>
+            </article>
+          );
+        })}
+        <p class="data-note reveal">Repository signals refreshed from GitHub · {refreshedAt} CST. CI 只证明配置的构建通过，不等于所有目标设备或系统已完成验收。</p>
+      </section>
+
+      <section class="principles section-shell" id="principles" aria-labelledby="principles-title" data-section="02">
+        <div class="section-heading reveal">
+          <div><p class="section-index">02 / HOW I BUILD</p><h2 id="principles-title">按真实世界的约束构建。</h2></div>
+          <p>Build for reality. 每条原则都来自产品研发、发布门禁和实际交付中的具体问题。</p>
+        </div>
+        <div class="principle-list">
+          {principles.map(([index, title, text]) => (
+            <article class="principle reveal">
+              <span>{index}</span><h3>{title}</h3><p>{text}</p><i aria-hidden="true">↗</i>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="proof section-shell" aria-labelledby="proof-title">
+        <div class="proof-copy reveal">
+          <p class="section-index">03 / PROOF OF WORK</p>
+          <h2 id="proof-title">少一点宣称，<br />多一点<span>可检查的证据。</span></h2>
+          <p>版本、构建与公开文档由 GitHub 数据驱动。没有用户量、完成率或虚构绿灯。</p>
+          <a class="text-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">查看全部公开仓库 ↗</a>
+        </div>
+        <div class="signal-panel reveal">
+          <div class="signal-header"><span>LIVE REPOSITORY SIGNALS</span><small>REFRESHED {refreshedAt} CST</small></div>
+          {projects.map((project) => {
+            const signal = signalFor(project.slug);
+            const fallback = project.slug === "yipan" ? "Public facts & roadmap available" : project.status;
+            return <a href={signal?.href ?? project.href} target="_blank" rel="noreferrer"><i class={signal?.tone === "pass" || signal?.tone === "release" ? "ok" : "document"}></i><b>{project.name}</b><span>{signal?.label ?? fallback}</span><em>↗</em></a>;
+          })}
+        </div>
+      </section>
+
+      <section class="build-log section-shell" id="log" aria-labelledby="log-title" data-section="03">
+        <div class="section-heading reveal">
+          <div><p class="section-index">04 / BUILD LOG</p><h2 id="log-title">最近留下的轨迹</h2></div>
+          <p>Release、验证、硬件构建与开发复盘。记录完成了什么，也记录还没有完成什么。</p>
+        </div>
+        <div class="log-grid">
+          {buildLog.map((item) => (
+            <a class="log-entry reveal" href={item.href} target="_blank" rel="noreferrer">
+              <div><span>{item.type}</span><time>{item.date}</time></div>
+              <h3>{item.title}</h3><p>{item.text}</p><i>READ ↗</i>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="closing section-shell reveal">
+        <p class="eyebrow">NEXT CONTEXT · NEXT PRODUCT</p>
+        <h2>把复杂的系统，<br /><em>做成真正能用的产品。</em></h2>
+        <p>Building portable AI context, local-first systems, and practical tools from Hangzhou.</p>
+        <a class="button primary" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">在 GitHub 找到我 <span>↗</span></a>
+      </section>
+    </main>
+
+    <footer>
+      <div><b>RONGYI</b><span>Founder of Yi盘 · Hangzhou</span></div>
+      <p>以清晰、证据和真实有用的工作为准绳。</p>
+      <span>© {new Date().getFullYear()} @rongyishuaige7</span>
+    </footer>
+
+    <script>
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reveals = document.querySelectorAll(".reveal");
+      reveals.forEach((el, index) => {
+        if (!reduced && index < 3) el.classList.add("enter");
+      });
+      const header = document.querySelector("[data-header]");
+      const onScroll = () => header?.classList.toggle("is-scrolled", window.scrollY > 40);
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+    </script>
+  </body>
+</html>
