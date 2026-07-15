@@ -3,14 +3,14 @@ name: Deploy personal homepage
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "17 2 * * 1"
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -34,17 +34,31 @@ jobs:
         run: npm run status
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - name: Verify public status semantics
+        run: node scripts/check-github-status.mjs
       - name: Type-check Astro
         run: npm run check
       - name: Build static site
         run: npx astro build
+      - name: Verify generated public artifacts
+        run: |
+          test -s dist/index.html
+          test -s dist/404.html
+          test -s dist/og-card.png
+          test -s dist/apple-touch-icon.png
       - name: Setup Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: dist
   deploy:
+    if: github.event_name != 'pull_request'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

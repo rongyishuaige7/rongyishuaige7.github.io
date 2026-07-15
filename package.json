@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "status": "node scripts/fetch-github-status.mjs",
+    "status:check": "node scripts/check-github-status.mjs",
     "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",

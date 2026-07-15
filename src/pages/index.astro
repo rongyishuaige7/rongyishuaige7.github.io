@@ -15,19 +15,91 @@ const refreshedAt = new Intl.DateTimeFormat("zh-CN", {
   hour12: false
 }).format(new Date(githubStatus.generatedAt));
 
-const repoStatus = githubStatus.repositories as Record<string, {
-  ci: null | { conclusion: string | null; status: string; url: string };
-  release: null | { tag: string; url: string };
-}>;
+type CiSignal = {
+  status: string;
+  conclusion?: string | null;
+  url?: string;
+  headSha?: string;
+  runAt?: string;
+};
 
-function signalFor(slug: string) {
+type ReleaseSignal = {
+  status: string;
+  tag?: string;
+  url?: string;
+  publishedAt?: string;
+};
+
+type ArtifactSignal = {
+  status: string;
+  artifacts?: Array<{ name: string; url: string; expiresAt: string; expired: boolean }>;
+};
+
+type RepositoryStatus = {
+  url: string;
+  headSha: string;
+  ci: CiSignal;
+  release: ReleaseSignal;
+  artifact: ArtifactSignal;
+};
+
+type DisplaySignal = {
+  label: string;
+  href: string;
+  tone: "pass" | "release" | "running" | "failure" | "stale" | "neutral";
+};
+
+const repoStatus = githubStatus.repositories as Record<string, RepositoryStatus>;
+const statusSourceUrl = "https://github.com/rongyishuaige7/rongyishuaige7.github.io/blob/main/scripts/fetch-github-status.mjs";
+
+function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
+  const ci = signal.ci;
+  const href = ci.url ?? signal.url;
+  if (ci.status === "not_configured") return null;
+  if (ci.status === "unknown") return { label: "CI status unknown", href, tone: "neutral" };
+  if (ci.status === "unverified") return { label: "Current HEAD not verified", href, tone: "neutral" };
+  if (ci.status === "stale") return { label: "CI evidence is stale", href, tone: "stale" };
+  if (ci.status === "queued" || ci.status === "in_progress" || ci.status === "requested" || ci.status === "waiting" || ci.status === "pending") {
+    return { label: "Current HEAD CI running", href, tone: "running" };
+  }
+  if (ci.status === "completed" && ci.conclusion === "success") return { label: "Current HEAD CI passed", href, tone: "pass" };
+  if (ci.status === "completed") return { label: `Current HEAD CI ${ci.conclusion ?? "unknown"}`, href, tone: "failure" };
+  return { label: "CI status unknown", href, tone: "neutral" };
+}
+
+function releaseSignal(signal: RepositoryStatus): DisplaySignal | null {
+  const release = signal.release;
+  if (release.status === "available" && release.tag && release.url) {
+    return { label: `${release.tag} released`, href: release.url, tone: "release" };
+  }
+  if (release.status === "unknown") return { label: "Release status unknown", href: signal.url, tone: "neutral" };
+  return null;
+}
+
+function artifactSignal(signal: RepositoryStatus): DisplaySignal | null {
+  const artifact = signal.artifact;
+  const first = artifact.artifacts?.find((item) => !item.expired);
+  if (artifact.status === "available" && first) {
+    const expires = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(first.expiresAt));
+    return { label: `Firmware Artifact available until ${expires}`, href: first.url, tone: "pass" };
+  }
+  if (artifact.status === "expired") return { label: "Firmware Artifact expired", href: signal.url, tone: "stale" };
+  if (artifact.status === "unknown") return { label: "Artifact status unknown", href: signal.url, tone: "neutral" };
+  if (artifact.status === "unavailable" || artifact.status === "none") return { label: "No current firmware Artifact", href: signal.url, tone: "neutral" };
+  return null;
+}
+
+function primarySignal(slug: string) {
   const signal = repoStatus[slug];
   if (!signal) return null;
-  if (signal.release?.tag) return { label: `${signal.release.tag} released`, href: signal.release.url, tone: "release" };
-  if (signal.ci?.conclusion === "success") return { label: "Latest CI passed", href: signal.ci.url, tone: "pass" };
-  if (signal.ci?.status === "in_progress") return { label: "CI running", href: signal.ci.url, tone: "running" };
-  if (signal.ci) return { label: "Check latest CI", href: signal.ci.url, tone: "neutral" };
-  return null;
+  if (slug === "ESP32_RPS_Game") return artifactSignal(signal) ?? ciSignal(signal) ?? releaseSignal(signal);
+  return ciSignal(signal) ?? releaseSignal(signal);
+}
+
+function evidenceSignals(slug: string) {
+  const signal = repoStatus[slug];
+  if (!signal) return [];
+  return [releaseSignal(signal), ciSignal(signal), artifactSignal(signal)].filter((item): item is DisplaySignal => item !== null && item.label !== "Release status unknown");
 }
 
 const principles = [
@@ -40,6 +112,32 @@ const principles = [
 
 const title = "Rongyi — Yi盘 Founder & Product Builder";
 const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、本地优先的 AI Agent 产品、知识系统、桌面工具与软硬件交付。";
+const siteUrl = "https://rongyishuaige7.github.io/";
+const socialImage = `${siteUrl}og-card.png`;
+const socialImageAlt = "Rongyi Founder Lab — 让 AI 的上下文，跟着人走。";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${siteUrl}#person`,
+      name: "Rongyi",
+      url: siteUrl,
+      sameAs: ["https://github.com/rongyishuaige7"],
+      jobTitle: "Founder of Yi盘",
+      homeLocation: { "@type": "Place", name: "Hangzhou, China" }
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}#website`,
+      url: siteUrl,
+      name: "Rongyi / Founder Lab",
+      description,
+      inLanguage: "zh-CN",
+      publisher: { "@id": `${siteUrl}#person` }
+    }
+  ]
+};
 ---
 
 <!doctype html>
@@ -49,14 +147,28 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#07090d" />
+    <meta name="color-scheme" content="dark" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://rongyishuaige7.github.io/" />
+    <meta property="og:url" content={siteUrl} />
     <meta property="og:title" content="Rongyi / Founder Lab" />
-    <meta property="og:description" content="Portable AI context. Local-first systems. Products built for real work." />
-    <meta property="og:image" content="https://rongyishuaige7.github.io/og-card.svg" />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Rongyi / Founder Lab" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={socialImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="canonical" href="https://rongyishuaige7.github.io/" />
+    <meta name="twitter:title" content="Rongyi / Founder Lab" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
+    <link rel="canonical" href={siteUrl} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
     <title>{title}</title>
   </head>
   <body>
@@ -74,6 +186,9 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
       </nav>
       <a class="header-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a>
     </header>
+    <nav class="mobile-nav" aria-label="移动端章节导航">
+      <a href="#work">作品</a><a href="#principles">原则</a><a href="#log">日志</a>
+    </nav>
 
     <main id="main">
       <section class="hero" id="top" data-section="00">
@@ -88,10 +203,11 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
           </div>
         </div>
 
-        <div class="context-machine reveal" aria-label="上下文从本地资料经由 Yi盘流向受管 AI Agent 的抽象示意">
+        <figure class="context-machine reveal" aria-labelledby="context-machine-caption">
+          <figcaption id="context-machine-caption" class="visually-hidden">抽象能力图：任务、长期资料与项目背景经由 Yi盘提供给多个受管 AI Agent，不代表实时运行状态。</figcaption>
           <div class="machine-topline">
             <span>CONTEXT ROUTER</span>
-            <span class="online"><i></i> CONTROLLED BETA</span>
+            <span class="online"><i></i> CONCEPT MAP</span>
           </div>
           <div class="machine-grid" aria-hidden="true">
             <div class="source-stack">
@@ -107,26 +223,26 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
             </div>
             <div class="route route-right"><i class="packet packet-c"></i></div>
             <div class="agent-stack">
-              <div><i></i><b>AGENT 01</b><small>READY</small></div>
-              <div><i></i><b>AGENT 02</b><small>READY</small></div>
-              <div><i></i><b>AGENT 03</b><small>MANAGED</small></div>
+              <div><i></i><b>AGENT 01</b><small>ROLE</small></div>
+              <div><i></i><b>AGENT 02</b><small>ROLE</small></div>
+              <div><i></i><b>AGENT 03</b><small>ROLE</small></div>
             </div>
           </div>
           <div class="machine-footer"><span>LOCAL DATA LAYER</span><span>USER CONTROLLED</span><span>CLOUD MODEL OPTIONAL</span></div>
-        </div>
+        </figure>
 
-        <div class="scroll-note" aria-hidden="true"><span></span> SCROLL TO TRACE THE WORK</div>
+        <div class="scroll-note" aria-hidden="true"><span></span> SCROLL TO EXPLORE THE WORK</div>
       </section>
 
       <section class="manifesto section-shell reveal" aria-labelledby="manifesto-title">
         <div class="section-index">00 / POSITION</div>
         <div>
           <p class="eyebrow">BUILDER, NOT JUST A DEMO MAKER.</p>
-          <h2 id="manifesto-title">不止做演示，<br />更把产品做成<span>可交付系统。</span></h2>
+          <h2 id="manifesto-title"><span class="statement-line">不止做演示，</span><span class="statement-line">更把产品做成<span>可交付系统。</span></span></h2>
         </div>
         <p>我关注 AI Agent 产品化、本地优先知识系统、桌面应用与软硬件交付。比起堆叠功能，我更在意真实状态、明确边界与失败后的恢复。</p>
-        <div class="skill-strip" aria-label="关注方向">
-          <span>AI AGENT PRODUCTIZATION</span><span>LOCAL-FIRST SYSTEMS</span><span>DESKTOP & EMBEDDED</span><span>RELEASE DISCIPLINE</span>
+        <div class="skill-strip" role="list" aria-label="关注方向">
+          <span role="listitem">AI AGENT PRODUCTIZATION</span><span role="listitem">LOCAL-FIRST SYSTEMS</span><span role="listitem">DESKTOP & EMBEDDED</span><span role="listitem">RELEASE DISCIPLINE</span>
         </div>
       </section>
 
@@ -137,7 +253,7 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
         </div>
 
         {projects.map((project) => {
-          const signal = signalFor(project.slug);
+          const signal = primarySignal(project.slug);
           return project.featured ? (
             <article class="project-featured reveal">
               <div class="project-main">
@@ -151,7 +267,8 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
                 </div>
                 {project.caveat && <p class="caveat">边界说明 · {project.caveat}</p>}
               </div>
-              <div class="yipan-blueprint" aria-label="Yi盘公开能力结构示意，不是产品截图">
+              <figure class="yipan-blueprint" aria-labelledby="yipan-blueprint-caption">
+                <figcaption id="yipan-blueprint-caption" class="visually-hidden">Yi盘公开能力结构抽象图，不是产品截图。真实产品素材将在后续替换此区域。</figcaption>
                 <div class="blueprint-label">PUBLIC CAPABILITY MAP · NOT A PRODUCT SCREENSHOT</div>
                 <div class="drive-body">
                   <div class="drive-port"><i></i><i></i><i></i></div>
@@ -162,7 +279,7 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
                 </div>
                 <div class="capability-row"><span>INBOX</span><span>VAULT</span><span>AGENTS</span><span>BYOK</span></div>
                 <div class="proof-note"><i></i> REAL PRODUCT MEDIA WILL REPLACE THIS ABSTRACT MAP</div>
-              </div>
+              </figure>
             </article>
           ) : (
             <article class="project-row reveal">
@@ -177,11 +294,11 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
                 <div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
                 {signal ? <a class={`live-signal ${signal.tone}`} href={signal.href} target="_blank" rel="noreferrer"><i></i>{signal.label} ↗</a> : <span class="status"><i></i>{project.status}</span>}
               </div>
-              <a class="project-arrow" href={project.href} target="_blank" rel="noreferrer" aria-label={`打开 ${project.name} 仓库`}>↗</a>
+              <a class="project-arrow" href={project.href} target="_blank" rel="noreferrer" aria-label={`打开 ${project.name} 仓库`}><span class="project-arrow-label">仓库</span><span aria-hidden="true">↗</span></a>
             </article>
           );
         })}
-        <p class="data-note reveal">Repository signals refreshed from GitHub · {refreshedAt} CST. CI 只证明配置的构建通过，不等于所有目标设备或系统已完成验收。</p>
+        <p class="data-note reveal">Repository signals refreshed from GitHub · {refreshedAt} CST. CI 仅代表指定工作流对当前默认分支 HEAD 的结果；失败、过期、未验证与 API 异常会明确标注。<a href={statusSourceUrl} target="_blank" rel="noopener noreferrer">查看状态口径 ↗</a></p>
       </section>
 
       <section class="principles section-shell" id="principles" aria-labelledby="principles-title" data-section="02">
@@ -192,7 +309,7 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
         <div class="principle-list">
           {principles.map(([index, title, text]) => (
             <article class="principle reveal">
-              <span>{index}</span><h3>{title}</h3><p>{text}</p><i aria-hidden="true">↗</i>
+              <span>{index}</span><h3>{title}</h3><p>{text}</p>
             </article>
           ))}
         </div>
@@ -207,15 +324,18 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
         </div>
         <div class="signal-panel reveal">
           <div class="signal-header"><span>LIVE REPOSITORY SIGNALS</span><small>REFRESHED {refreshedAt} CST</small></div>
-          {projects.map((project) => {
-            const signal = signalFor(project.slug);
-            const fallback = project.slug === "yipan" ? "Public facts & roadmap available" : project.status;
-            return <a href={signal?.href ?? project.href} target="_blank" rel="noreferrer"><i class={signal?.tone === "pass" || signal?.tone === "release" ? "ok" : "document"}></i><b>{project.name}</b><span>{signal?.label ?? fallback}</span><em>↗</em></a>;
+          {projects.flatMap((project) => {
+            const signals = evidenceSignals(project.slug);
+            if (signals.length === 0) {
+              const label = project.slug === "yipan" ? "Public facts & roadmap available" : "No automated evidence configured";
+              return [<a class="signal-row neutral" href={project.href} target="_blank" rel="noopener noreferrer"><i class="document"></i><b>{project.name}</b><span>{label}</span><em>↗</em></a>];
+            }
+            return signals.map((signal, index) => <a class={`signal-row ${signal.tone}`} href={signal.href} target="_blank" rel="noopener noreferrer"><i class={signal.tone === "pass" || signal.tone === "release" ? "ok" : signal.tone === "failure" ? "failure" : "document"}></i><b>{index === 0 ? project.name : `${project.name} · evidence`}</b><span>{signal.label}</span><em>↗</em></a>);
           })}
         </div>
       </section>
 
-      <section class="build-log section-shell" id="log" aria-labelledby="log-title" data-section="03">
+      <section class="build-log section-shell" id="log" aria-labelledby="log-title" data-section="04">
         <div class="section-heading reveal">
           <div><p class="section-index">04 / BUILD LOG</p><h2 id="log-title">最近留下的轨迹</h2></div>
           <p>Release、验证、硬件构建与开发复盘。记录完成了什么，也记录还没有完成什么。</p>
@@ -223,7 +343,7 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
         <div class="log-grid">
           {buildLog.map((item) => (
             <a class="log-entry reveal" href={item.href} target="_blank" rel="noreferrer">
-              <div><span>{item.type}</span><time>{item.date}</time></div>
+              <div><span>{item.type}</span><time datetime={item.date.replaceAll(".", "-")}>{item.date}</time></div>
               <h3>{item.title}</h3><p>{item.text}</p><i>READ ↗</i>
             </a>
           ))}
@@ -232,7 +352,7 @@ const description = "Rongyi 的个人主页。Yi盘创始人，专注便携、�
 
       <section class="closing section-shell reveal">
         <p class="eyebrow">NEXT CONTEXT · NEXT PRODUCT</p>
-        <h2>把复杂的系统，<br /><em>做成真正能用的产品。</em></h2>
+        <h2><span class="statement-line">把复杂的系统，</span><span class="statement-line"><em>做成真正能用的产品。</em></span></h2>
         <p>Building portable AI context, local-first systems, and practical tools from Hangzhou.</p>
         <a class="button primary" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">在 GitHub 找到我 <span>↗</span></a>
       </section>
