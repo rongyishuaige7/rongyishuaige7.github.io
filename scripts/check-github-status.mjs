@@ -4,9 +4,19 @@ const status = JSON.parse(await readFile(new URL("../src/data/github-status.json
 const failures = [];
 const nonGreenSignals = [];
 const now = Date.now();
+const requiredRepositories = [
+  "yipan-showcase",
+  "problem-solution-recorder-oss",
+  "devflow-recorder",
+  "ESP32_RPS_Game",
+  "pet-desktop-tauri"
+];
 
 if (!Number.isFinite(Date.parse(status.generatedAt))) failures.push("generatedAt is not a valid ISO timestamp");
 if (Math.abs(now - Date.parse(status.generatedAt)) > 10 * 60_000) failures.push("generatedAt is not from this build");
+for (const repo of requiredRepositories) {
+  if (!status.repositories?.[repo]) failures.push(`${repo}: required repository status is missing`);
+}
 
 for (const [repo, signal] of Object.entries(status.repositories ?? {})) {
   if (!signal.url || !signal.ci?.status || !signal.release?.status || !signal.artifact?.status) {
