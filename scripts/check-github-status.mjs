@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { isArtifactAvailable } from "./github-status-semantics.mjs";
 
 const status = JSON.parse(await readFile(new URL("../src/data/github-status.json", import.meta.url), "utf8"));
 const failures = [];
@@ -38,8 +39,16 @@ for (const [repo, signal] of Object.entries(status.repositories ?? {})) {
   if (signal.release.status === "available" && (!signal.release.tag || !signal.release.url)) {
     failures.push(`${repo}: available release is missing tag or URL`);
   }
-  if (signal.artifact.status === "available" && !signal.artifact.artifacts?.some((artifact) => !artifact.expired)) {
+  if (
+    signal.artifact.status === "available" &&
+    !signal.artifact.artifacts?.some((artifact) => isArtifactAvailable(artifact, now))
+  ) {
     failures.push(`${repo}: artifact is marked available without a live artifact`);
+  }
+  for (const artifact of signal.artifact.artifacts ?? []) {
+    if (!artifact.url || !Number.isFinite(Date.parse(artifact.expiresAt))) {
+      failures.push(`${repo}: artifact evidence is missing a valid URL or expiry time`);
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { artifactStatusForCi, getCiTiming, isArtifactAvailable } from "./github-status-semantics.mjs";
 
 const owner = "rongyishuaige7";
 const staleAfterHours = 48;
@@ -96,15 +97,15 @@ async function workflowSignal(repo, workflow, defaultBranch, headSha) {
     }
 
     const runAt = matchingHead.run_started_at ?? matchingHead.created_at;
-    const ageHours = runAt ? (Date.now() - Date.parse(runAt)) / 3_600_000 : null;
+    const timing = getCiTiming(runAt, staleAfterHours);
     return {
-      status: ageHours !== null && ageHours > staleAfterHours ? "stale" : matchingHead.status,
+      status: timing.stale ? "stale" : matchingHead.status,
       conclusion: matchingHead.conclusion,
       workflow,
       url: matchingHead.html_url,
       headSha: matchingHead.head_sha,
       runAt,
-      ageHours: ageHours === null ? null : Math.round(ageHours * 10) / 10
+      ageHours: timing.ageHours === null ? null : Math.round(timing.ageHours * 10) / 10
     };
   } catch (error) {
     return { status: "unknown", workflow, error: errorInfo(error) };
@@ -113,7 +114,9 @@ async function workflowSignal(repo, workflow, defaultBranch, headSha) {
 
 async function artifactSignal(repo, ci, enabled) {
   if (!enabled) return { status: "not_configured" };
-  if (!ci.url) return { status: "unavailable", reason: "No verified workflow run for the current default-branch HEAD." };
+  const preflight = artifactStatusForCi(ci.status, Boolean(ci.url));
+  if (preflight === "unknown") return { status: "unknown", reason: "The workflow status could not be confirmed." };
+  if (preflight === "unavailable") return { status: "unavailable", reason: "No verified workflow run for the current default-branch HEAD." };
 
   const runId = ci.url.split("/").at(-1);
   try {
@@ -127,7 +130,8 @@ async function artifactSignal(repo, ci, enabled) {
       expiresAt: artifact.expires_at,
       url: `${ci.url}#artifacts`
     }));
-    const available = artifacts.filter((artifact) => !artifact.expired);
+    const now = Date.now();
+    const available = artifacts.filter((artifact) => isArtifactAvailable(artifact, now));
     return {
       status: available.length > 0 ? "available" : artifacts.length > 0 ? "expired" : "none",
       artifacts

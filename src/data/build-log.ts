@@ -11,14 +11,21 @@ export const buildLog = [
     type: "BUILD",
     title: "ESP32 firmware artifact",
     text: "固定 PlatformIO 与 U8g2 版本，并让 CI 上传可追溯固件产物。",
-    href: "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions"
+    href: "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29339478819"
   },
   {
     date: "2026.07.14",
     type: "TEST",
-    title: "DevFlow & Desktop Pet",
-    text: "为真实业务纯函数补充最小单元测试，并接入持续集成。",
-    href: "https://github.com/rongyishuaige7?tab=repositories"
+    title: "DevFlow unit tests",
+    text: "为 DevFlow 的真实业务纯函数补充最小单元测试，并接入持续集成。",
+    href: "https://github.com/rongyishuaige7/devflow-recorder/actions/runs/29339471902"
+  },
+  {
+    date: "2026.07.14",
+    type: "TEST",
+    title: "Desktop Pet unit tests",
+    text: "为桌面宠物的真实业务纯函数补充最小单元测试，并接入持续集成。",
+    href: "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/29339475309"
   },
   {
     date: "2026.07.14",

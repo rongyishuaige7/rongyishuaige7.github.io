@@ -21,6 +21,7 @@ type CiSignal = {
   url?: string;
   headSha?: string;
   runAt?: string;
+  ageHours?: number;
 };
 
 type ReleaseSignal = {
@@ -44,6 +45,7 @@ type RepositoryStatus = {
 };
 
 type DisplaySignal = {
+  kind: "ci" | "release" | "artifact";
   label: string;
   href: string;
   tone: "pass" | "release" | "running" | "failure" | "stale" | "neutral";
@@ -56,46 +58,49 @@ function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
   const ci = signal.ci;
   const href = ci.url ?? signal.url;
   if (ci.status === "not_configured") return null;
-  if (ci.status === "unknown") return { label: "CI status unknown", href, tone: "neutral" };
-  if (ci.status === "unverified") return { label: "Current HEAD not verified", href, tone: "neutral" };
-  if (ci.status === "stale") return { label: "CI evidence is stale", href, tone: "stale" };
+  if (ci.status === "unknown") return { kind: "ci", label: "CI status unknown", href, tone: "neutral" };
+  if (ci.status === "unverified") return { kind: "ci", label: "Current HEAD not verified", href, tone: "neutral" };
+  if (ci.status === "stale") return { kind: "ci", label: "CI evidence is stale", href, tone: "stale" };
   if (ci.status === "queued" || ci.status === "in_progress" || ci.status === "requested" || ci.status === "waiting" || ci.status === "pending") {
-    return { label: "Current HEAD CI running", href, tone: "running" };
+    return { kind: "ci", label: "Current HEAD CI running", href, tone: "running" };
   }
-  if (ci.status === "completed" && ci.conclusion === "success") return { label: "Current HEAD CI passed", href, tone: "pass" };
-  if (ci.status === "completed") return { label: `Current HEAD CI ${ci.conclusion ?? "unknown"}`, href, tone: "failure" };
-  return { label: "CI status unknown", href, tone: "neutral" };
+  if (ci.status === "completed" && ci.conclusion === "success") return { kind: "ci", label: "Current HEAD CI passed", href, tone: "pass" };
+  if (ci.status === "completed") return { kind: "ci", label: `Current HEAD CI ${ci.conclusion ?? "unknown"}`, href, tone: "failure" };
+  return { kind: "ci", label: "CI status unknown", href, tone: "neutral" };
 }
 
 function releaseSignal(signal: RepositoryStatus): DisplaySignal | null {
   const release = signal.release;
   if (release.status === "available" && release.tag && release.url) {
-    return { label: `${release.tag} released`, href: release.url, tone: "release" };
+    return { kind: "release", label: `${release.tag} released`, href: release.url, tone: "release" };
   }
-  if (release.status === "unknown") return { label: "Release status unknown", href: signal.url, tone: "neutral" };
+  if (release.status === "unknown") return { kind: "release", label: "Release status unknown", href: signal.url, tone: "neutral" };
   return null;
 }
 
 function artifactSignal(signal: RepositoryStatus): DisplaySignal | null {
   const artifact = signal.artifact;
-  const first = artifact.artifacts?.find((item) => !item.expired);
+  const first = artifact.artifacts?.find(
+    (item) => !item.expired && Number.isFinite(Date.parse(item.expiresAt)) && Date.parse(item.expiresAt) > Date.now()
+  );
   if (artifact.status === "available" && first) {
     const expires = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(first.expiresAt));
-    return { label: `Firmware Artifact available until ${expires}`, href: first.url, tone: "pass" };
+    return { kind: "artifact", label: `Firmware Artifact available until ${expires}`, href: first.url, tone: "pass" };
   }
-  if (artifact.status === "expired") return { label: "Firmware Artifact expired", href: signal.url, tone: "stale" };
-  if (artifact.status === "unknown") return { label: "Artifact status unknown", href: signal.url, tone: "neutral" };
-  if (artifact.status === "unavailable" || artifact.status === "none") return { label: "No current firmware Artifact", href: signal.url, tone: "neutral" };
+  if (artifact.status === "available") return { kind: "artifact", label: "Firmware Artifact expired", href: signal.url, tone: "stale" };
+  if (artifact.status === "expired") return { kind: "artifact", label: "Firmware Artifact expired", href: signal.url, tone: "stale" };
+  if (artifact.status === "unknown") return { kind: "artifact", label: "Artifact status unknown", href: signal.url, tone: "neutral" };
+  if (artifact.status === "unavailable" || artifact.status === "none") return { kind: "artifact", label: "No current firmware Artifact", href: signal.url, tone: "neutral" };
   return null;
 }
 
-function primarySignal(slug: string) {
+function primarySignal(slug: string): DisplaySignal | null {
   const signal = repoStatus[slug];
   if (!signal) return null;
   return ciSignal(signal) ?? releaseSignal(signal) ?? artifactSignal(signal);
 }
 
-function evidenceSignals(slug: string) {
+function evidenceSignals(slug: string): DisplaySignal[] {
   const signal = repoStatus[slug];
   if (!signal) return [];
   return [releaseSignal(signal), ciSignal(signal), artifactSignal(signal)].filter((item): item is DisplaySignal => item !== null);
@@ -291,7 +296,7 @@ const structuredData = {
               </div>
               <div class="project-meta">
                 <div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
-                {signal ? <a class={`live-signal ${signal.tone}`} href={signal.href} target="_blank" rel="noreferrer"><i></i>{signal.label} ↗</a> : <span class="status"><i></i>{project.status}</span>}
+                {signal ? <a class={`live-signal ${signal.tone}`} href={signal.href} target="_blank" rel="noreferrer" data-ci-status={signal.kind === "ci" ? repoStatus[project.slug]?.ci.status : undefined} data-ci-run-at={signal.kind === "ci" ? repoStatus[project.slug]?.ci.runAt : undefined} data-artifact-status={signal.kind === "artifact" ? repoStatus[project.slug]?.artifact.status : undefined} data-artifact-expires-at={signal.kind === "artifact" ? repoStatus[project.slug]?.artifact.artifacts?.find((item) => !item.expired)?.expiresAt : undefined}><i></i><span data-signal-label>{signal.label}</span> ↗</a> : <span class="status"><i></i>{project.status}</span>}
               </div>
               <a class="project-arrow" href={project.href} target="_blank" rel="noreferrer" aria-label={`打开 ${project.name} 仓库`}><span class="project-arrow-label">仓库</span><span aria-hidden="true">↗</span></a>
             </article>
@@ -322,14 +327,18 @@ const structuredData = {
           <a class="text-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">查看全部公开仓库 ↗</a>
         </div>
         <div class="signal-panel reveal">
-          <div class="signal-header"><span>LIVE REPOSITORY SIGNALS</span><small>REFRESHED {refreshedAt} CST</small></div>
+          <div class="signal-header"><span>REPOSITORY EVIDENCE SNAPSHOT</span><small>AS OF {refreshedAt} CST</small></div>
           {projects.flatMap((project) => {
             const signals = evidenceSignals(project.slug);
             if (signals.length === 0) {
               const label = project.slug === "yipan" ? "Public facts & roadmap available" : "No automated evidence configured";
               return [<a class="signal-row neutral" href={project.href} target="_blank" rel="noopener noreferrer"><i class="document"></i><b>{project.name}</b><span>{label}</span><em>↗</em></a>];
             }
-            return signals.map((signal, index) => <a class={`signal-row ${signal.tone}`} href={signal.href} target="_blank" rel="noopener noreferrer"><i class={signal.tone === "pass" || signal.tone === "release" ? "ok" : signal.tone === "failure" ? "failure" : "document"}></i><b>{index === 0 ? project.name : `${project.name} · evidence`}</b><span>{signal.label}</span><em>↗</em></a>);
+            return signals.map((signal, index) => {
+              const isCi = signal.kind === "ci";
+              const isArtifact = signal.kind === "artifact";
+              return <a class={`signal-row ${signal.tone}`} href={signal.href} target="_blank" rel="noopener noreferrer" data-ci-status={isCi ? repoStatus[project.slug]?.ci.status : undefined} data-ci-run-at={isCi ? repoStatus[project.slug]?.ci.runAt : undefined} data-artifact-status={isArtifact ? repoStatus[project.slug]?.artifact.status : undefined} data-artifact-expires-at={isArtifact ? repoStatus[project.slug]?.artifact.artifacts?.find((item) => !item.expired)?.expiresAt : undefined}><i class={signal.tone === "pass" || signal.tone === "release" ? "ok" : signal.tone === "failure" ? "failure" : "document"}></i><b>{index === 0 ? project.name : `${project.name} · evidence`}</b><span data-signal-label>{signal.label}</span><em>↗</em></a>;
+            });
           })}
         </div>
       </section>
@@ -364,6 +373,9 @@ const structuredData = {
     </footer>
 
     <script>
+      import { refreshTimeSensitiveSignals } from "../scripts/status-freshness";
+      refreshTimeSensitiveSignals();
+
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const reveals = document.querySelectorAll(".reveal");
       reveals.forEach((el, index) => {
