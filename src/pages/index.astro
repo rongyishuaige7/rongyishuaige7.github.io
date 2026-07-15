@@ -37,7 +37,7 @@ type ArtifactSignal = {
 
 type RepositoryStatus = {
   url: string;
-  headSha: string;
+  headSha: string | null;
   ci: CiSignal;
   release: ReleaseSignal;
   artifact: ArtifactSignal;
@@ -92,14 +92,13 @@ function artifactSignal(signal: RepositoryStatus): DisplaySignal | null {
 function primarySignal(slug: string) {
   const signal = repoStatus[slug];
   if (!signal) return null;
-  if (slug === "ESP32_RPS_Game") return artifactSignal(signal) ?? ciSignal(signal) ?? releaseSignal(signal);
-  return ciSignal(signal) ?? releaseSignal(signal);
+  return ciSignal(signal) ?? releaseSignal(signal) ?? artifactSignal(signal);
 }
 
 function evidenceSignals(slug: string) {
   const signal = repoStatus[slug];
   if (!signal) return [];
-  return [releaseSignal(signal), ciSignal(signal), artifactSignal(signal)].filter((item): item is DisplaySignal => item !== null && item.label !== "Release status unknown");
+  return [releaseSignal(signal), ciSignal(signal), artifactSignal(signal)].filter((item): item is DisplaySignal => item !== null);
 }
 
 const principles = [
@@ -176,7 +175,7 @@ const structuredData = {
     <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
 
     <header class="site-header" data-header>
-      <a class="wordmark" href="#top" aria-label="Rongyi 首页">
+      <a class="wordmark" href="#top" aria-label="RONGYI 首页">
         <span>R</span><b>RONGYI</b><small>/ FOUNDER LAB</small>
       </a>
       <nav aria-label="主导航">

@@ -2,18 +2,33 @@ import { readFile } from "node:fs/promises";
 
 const status = JSON.parse(await readFile(new URL("../src/data/github-status.json", import.meta.url), "utf8"));
 const failures = [];
+const nonGreenSignals = [];
 const now = Date.now();
 
 if (!Number.isFinite(Date.parse(status.generatedAt))) failures.push("generatedAt is not a valid ISO timestamp");
 if (Math.abs(now - Date.parse(status.generatedAt)) > 10 * 60_000) failures.push("generatedAt is not from this build");
 
 for (const [repo, signal] of Object.entries(status.repositories ?? {})) {
-  if (!signal.defaultBranch || !/^[0-9a-f]{40}$/.test(signal.headSha ?? "")) failures.push(`${repo}: missing default-branch HEAD`);
-  if (["unknown", "unverified"].includes(signal.ci?.status)) failures.push(`${repo}: CI ${signal.ci.status}`);
-  if (signal.ci?.headSha && signal.ci.headSha !== signal.headSha) failures.push(`${repo}: CI does not verify current HEAD`);
-  if (signal.release?.status === "unknown") failures.push(`${repo}: release status unknown`);
-  if (signal.artifact?.status === "unknown") failures.push(`${repo}: artifact status unknown`);
-  if (signal.artifact?.status === "available" && !signal.artifact.artifacts?.some((artifact) => !artifact.expired)) {
+  if (!signal.url || !signal.ci?.status || !signal.release?.status || !signal.artifact?.status) {
+    failures.push(`${repo}: incomplete status schema`);
+    continue;
+  }
+
+  if (["unknown", "unverified", "stale"].includes(signal.ci.status)) nonGreenSignals.push(`${repo}: CI ${signal.ci.status}`);
+  if (signal.release.status === "unknown") nonGreenSignals.push(`${repo}: release unknown`);
+  if (signal.artifact.status === "unknown") nonGreenSignals.push(`${repo}: artifact unknown`);
+
+  if (["completed", "stale"].includes(signal.ci.status)) {
+    if (!signal.defaultBranch || !/^[0-9a-f]{40}$/.test(signal.headSha ?? "")) failures.push(`${repo}: verified CI is missing default-branch HEAD`);
+    if (!/^[0-9a-f]{40}$/.test(signal.ci.headSha ?? "")) failures.push(`${repo}: verified CI is missing run HEAD`);
+    if (signal.ci.headSha !== signal.headSha) failures.push(`${repo}: CI does not verify current HEAD`);
+    if (!signal.ci.url || !signal.ci.runAt) failures.push(`${repo}: verified CI is missing evidence URL or time`);
+  }
+
+  if (signal.release.status === "available" && (!signal.release.tag || !signal.release.url)) {
+    failures.push(`${repo}: available release is missing tag or URL`);
+  }
+  if (signal.artifact.status === "available" && !signal.artifact.artifacts?.some((artifact) => !artifact.expired)) {
     failures.push(`${repo}: artifact is marked available without a live artifact`);
   }
 }
@@ -23,4 +38,7 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Verified public status for ${Object.keys(status.repositories).length} repositories.`);
+console.log(`Verified public status semantics for ${Object.keys(status.repositories).length} repositories.`);
+if (nonGreenSignals.length > 0) {
+  console.warn(`Publishing explicit non-green status:\n- ${nonGreenSignals.join("\n- ")}`);
+}

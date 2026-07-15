@@ -141,28 +141,45 @@ const generatedAt = new Date().toISOString();
 const results = {};
 
 for (const config of repositories) {
-  const details = await api(`/repos/${owner}/${config.repo}`);
-  const branch = await api(`/repos/${owner}/${config.repo}/branches/${encodeURIComponent(details.default_branch)}`);
-  const headSha = branch.commit.sha;
-  const [release, ci] = await Promise.all([
-    latestRelease(config.repo),
-    workflowSignal(config.repo, config.workflow, details.default_branch, headSha)
-  ]);
-  const artifact = await artifactSignal(config.repo, ci, config.artifacts);
+  try {
+    const details = await api(`/repos/${owner}/${config.repo}`);
+    const branch = await api(`/repos/${owner}/${config.repo}/branches/${encodeURIComponent(details.default_branch)}`);
+    const headSha = branch.commit.sha;
+    const [release, ci] = await Promise.all([
+      latestRelease(config.repo),
+      workflowSignal(config.repo, config.workflow, details.default_branch, headSha)
+    ]);
+    const artifact = await artifactSignal(config.repo, ci, config.artifacts);
 
-  results[config.repo] = {
-    repo: config.repo,
-    url: details.html_url,
-    description: details.description,
-    license: details.license?.spdx_id ?? null,
-    language: details.language,
-    defaultBranch: details.default_branch,
-    headSha,
-    pushedAt: details.pushed_at,
-    ci,
-    release,
-    artifact
-  };
+    results[config.repo] = {
+      repo: config.repo,
+      url: details.html_url,
+      description: details.description,
+      license: details.license?.spdx_id ?? null,
+      language: details.language,
+      defaultBranch: details.default_branch,
+      headSha,
+      pushedAt: details.pushed_at,
+      ci,
+      release,
+      artifact
+    };
+  } catch (error) {
+    const info = errorInfo(error);
+    results[config.repo] = {
+      repo: config.repo,
+      url: `https://github.com/${owner}/${config.repo}`,
+      description: null,
+      license: null,
+      language: null,
+      defaultBranch: null,
+      headSha: null,
+      pushedAt: null,
+      ci: config.workflow ? { status: "unknown", workflow: config.workflow, error: info } : { status: "not_configured" },
+      release: { status: "unknown", error: info },
+      artifact: config.artifacts ? { status: "unknown", error: info } : { status: "not_configured" }
+    };
+  }
 }
 
 const payload = {
