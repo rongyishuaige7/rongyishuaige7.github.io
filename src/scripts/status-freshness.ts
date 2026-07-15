@@ -4,13 +4,13 @@ export function refreshTimeSensitiveSignals(root: ParentNode = document, now = D
   root.querySelectorAll<HTMLElement>("[data-ci-status='completed'][data-ci-run-at]").forEach((signal) => {
     const runAt = Date.parse(signal.dataset.ciRunAt ?? "");
     if (Number.isFinite(runAt) && now - runAt <= staleAfterHours * 3_600_000) return;
-    markStale(signal, "CI evidence is stale");
+    markStale(signal, "CI 记录已超过 48 小时");
   });
 
   root.querySelectorAll<HTMLElement>("[data-artifact-status='available']").forEach((signal) => {
     const expiresAt = Date.parse(signal.dataset.artifactExpiresAt ?? "");
     if (Number.isFinite(expiresAt) && expiresAt > now) return;
-    markStale(signal, "Firmware Artifact expired");
+    markStale(signal, "固件构建产物已过期");
   });
 }
 
