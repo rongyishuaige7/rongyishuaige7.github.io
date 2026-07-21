@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",
-    "astro": "^7.0.9"
+    "astro": "^7.1.0"
   },
   "description": "Rongyi personal homepage — Founder of Yi盘 and product builder.",
   "devDependencies": {
