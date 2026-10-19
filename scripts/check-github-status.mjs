@@ -25,11 +25,12 @@ for (const [repo, signal] of Object.entries(status.repositories ?? {})) {
     continue;
   }
 
-  if (["unknown", "unverified", "stale"].includes(signal.ci.status)) nonGreenSignals.push(`${repo}: CI ${signal.ci.status}`);
+  if (["unknown", "unverified"].includes(signal.ci.status)) nonGreenSignals.push(`${repo}: CI ${signal.ci.status}`);
+  if (signal.ci.status === "stale") failures.push(`${repo}: time-based CI staleness is no longer a valid state`);
   if (signal.release.status === "unknown") nonGreenSignals.push(`${repo}: release unknown`);
   if (signal.artifact.status === "unknown") nonGreenSignals.push(`${repo}: artifact unknown`);
 
-  if (["completed", "stale"].includes(signal.ci.status)) {
+  if (signal.ci.status === "completed") {
     if (!signal.defaultBranch || !/^[0-9a-f]{40}$/.test(signal.headSha ?? "")) failures.push(`${repo}: verified CI is missing default-branch HEAD`);
     if (!/^[0-9a-f]{40}$/.test(signal.ci.headSha ?? "")) failures.push(`${repo}: verified CI is missing run HEAD`);
     if (signal.ci.headSha !== signal.headSha) failures.push(`${repo}: CI does not verify current HEAD`);

@@ -1,12 +1,6 @@
-const staleAfterHours = 48;
-
+// CI evidence is tied to the current default-branch HEAD at build time, so it does not
+// expire in the browser. Artifact downloads do expire, so their labels are re-checked here.
 export function refreshTimeSensitiveSignals(root: ParentNode = document, now = Date.now()) {
-  root.querySelectorAll<HTMLElement>("[data-ci-status='completed'][data-ci-run-at]").forEach((signal) => {
-    const runAt = Date.parse(signal.dataset.ciRunAt ?? "");
-    if (Number.isFinite(runAt) && now - runAt <= staleAfterHours * 3_600_000) return;
-    markStale(signal, "CI 记录已超过 48 小时");
-  });
-
   root.querySelectorAll<HTMLElement>("[data-artifact-status='available']").forEach((signal) => {
     const expiresAt = Date.parse(signal.dataset.artifactExpiresAt ?? "");
     if (Number.isFinite(expiresAt) && expiresAt > now) return;
