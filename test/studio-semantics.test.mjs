@@ -1,0 +1,52 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { chipFamily, firstProseLine, isOwnedPublicHref, summarizeNpmDoc } from "../scripts/studio-semantics.mjs";
+
+const now = Date.parse("2026-10-19T12:00:00.000Z");
+
+test("chip families group board variants by their first platform token", () => {
+  assert.deepEqual(chipFamily("ESP32-CAM × 4 · ESP32 · YOLOv8"), { family: "esp32", chip: "ESP32-CAM × 4" });
+  assert.deepEqual(chipFamily("ESP32-C3 · Arduino · NimBLE"), { family: "esp32", chip: "ESP32-C3" });
+  assert.deepEqual(chipFamily("STM32F103 · C · PlatformIO"), { family: "stm32", chip: "STM32F103" });
+  assert.deepEqual(chipFamily("Raspberry Pi · Python · Flask"), { family: "rpi", chip: "Raspberry Pi" });
+  assert.deepEqual(chipFamily("Arduino Uno · PlatformIO"), { family: "arduino", chip: "Arduino Uno" });
+  assert.deepEqual(chipFamily(""), { family: "other", chip: "Board" });
+});
+
+test("npm summary counts versions published inside the last 30 days", () => {
+  const doc = {
+    "dist-tags": { latest: "0.4.3" },
+    versions: { "0.1.0": {}, "0.4.2": {}, "0.4.3": {} },
+    time: {
+      created: "2026-07-01T00:00:00.000Z",
+      "0.1.0": "2026-07-01T00:00:00.000Z",
+      "0.4.2": "2026-10-01T00:00:00.000Z",
+      "0.4.3": "2026-10-15T10:01:10.869Z"
+    }
+  };
+  assert.deepEqual(summarizeNpmDoc(doc, now), {
+    latest: "0.4.3",
+    publishedAt: "2026-10-15T10:01:10.869Z",
+    versionCount: 3,
+    versionsLast30Days: 2
+  });
+});
+
+test("npm summary fails closed without a dated latest version", () => {
+  assert.equal(summarizeNpmDoc({ "dist-tags": { latest: "1.0.0" }, versions: {}, time: {} }, now), null);
+  assert.equal(summarizeNpmDoc(null, now), null);
+});
+
+test("release text skips headings, tables and markup", () => {
+  assert.equal(firstProseLine("# Title\n\n| a | b |\n- **索引保护**与 [转义](https://x)"), "索引保护与 转义");
+  assert.equal(firstProseLine("## Only a heading"), null);
+  assert.equal(firstProseLine("x".repeat(100), 10), `${"x".repeat(9)}…`);
+});
+
+test("feed links must stay inside the owner's public GitHub or npm scope", () => {
+  assert.equal(isOwnedPublicHref("https://github.com/rongyishuaige7/ningque/releases/tag/v1.0.0", "rongyishuaige7"), true);
+  assert.equal(isOwnedPublicHref("https://www.npmjs.com/package/@rongyi7/dsh-stats", "rongyishuaige7"), true);
+  assert.equal(isOwnedPublicHref("https://github.com/someone-else/repo", "rongyishuaige7"), false);
+  assert.equal(isOwnedPublicHref(undefined, "rongyishuaige7"), false);
+});

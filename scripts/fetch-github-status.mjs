@@ -7,10 +7,16 @@ const retryDelaysMs = [500, 1_500];
 
 const repositories = [
   { repo: "yipan-showcase" },
+  { repo: "dsh-stats", workflow: "ci.yml" },
+  { repo: "dsh-spec" },
+  { repo: "tech-mentor" },
   { repo: "problem-solution-recorder-oss", workflow: "validate.yml" },
+  { repo: "ningque" },
   { repo: "devflow-recorder", workflow: "ci.yml" },
-  { repo: "ESP32_RPS_Game", workflow: "ci.yml", artifacts: true },
-  { repo: "pet-desktop-tauri", workflow: "ci.yml" }
+  { repo: "memory-monitor", workflow: "ci.yml" },
+  { repo: "pet-desktop-tauri", workflow: "ci.yml" },
+  { repo: "hardware-lab", workflow: "validate.yml" },
+  { repo: "ESP32_RPS_Game", workflow: "ci.yml", artifacts: true }
 ];
 
 const token = process.env.GITHUB_TOKEN;
@@ -164,6 +170,7 @@ for (const config of repositories) {
       language: details.language,
       defaultBranch: details.default_branch,
       headSha,
+      headCommittedAt: branch.commit.commit?.committer?.date ?? null,
       pushedAt: details.pushed_at,
       ci,
       release,
@@ -179,6 +186,7 @@ for (const config of repositories) {
       language: null,
       defaultBranch: null,
       headSha: null,
+      headCommittedAt: null,
       pushedAt: null,
       ci: config.workflow ? { status: "unknown", workflow: config.workflow, error: info } : { status: "not_configured" },
       release: { status: "unknown", error: info },

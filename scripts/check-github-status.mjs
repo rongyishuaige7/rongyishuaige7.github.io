@@ -7,10 +7,16 @@ const nonGreenSignals = [];
 const now = Date.now();
 const requiredRepositories = [
   "yipan-showcase",
+  "dsh-stats",
+  "dsh-spec",
+  "tech-mentor",
   "problem-solution-recorder-oss",
+  "ningque",
   "devflow-recorder",
-  "ESP32_RPS_Game",
-  "pet-desktop-tauri"
+  "memory-monitor",
+  "pet-desktop-tauri",
+  "hardware-lab",
+  "ESP32_RPS_Game"
 ];
 
 if (!Number.isFinite(Date.parse(status.generatedAt))) failures.push("generatedAt is not a valid ISO timestamp");
