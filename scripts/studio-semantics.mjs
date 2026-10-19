@@ -41,6 +41,23 @@ export function firstProseLine(markdown, max = 72) {
   return null;
 }
 
+export function hasCJK(text) {
+  return /[\u3400-\u9fff]/.test(String(text ?? ""));
+}
+
+/**
+ * Feed copy for a release. Curated Chinese summaries win; a Chinese body keeps
+ * its first prose line; anything else becomes a neutral Chinese template line
+ * instead of a truncated English fragment.
+ */
+export function releaseFeedText({ repo, tag, body, summaries = {} }, max = 72) {
+  const curated = summaries?.[`${repo}@${tag}`];
+  if (curated) return curated;
+  const line = firstProseLine(body, max);
+  if (line && hasCJK(line)) return line;
+  return `${repo} 发布 ${tag}。`;
+}
+
 export function isOwnedPublicHref(href, owner) {
   return (
     typeof href === "string" &&

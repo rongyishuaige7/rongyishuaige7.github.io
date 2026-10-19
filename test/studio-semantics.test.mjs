@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { chipFamily, firstProseLine, isOwnedPublicHref, summarizeNpmDoc } from "../scripts/studio-semantics.mjs";
+import { chipFamily, firstProseLine, hasCJK, isOwnedPublicHref, releaseFeedText, summarizeNpmDoc } from "../scripts/studio-semantics.mjs";
 
 const now = Date.parse("2026-10-19T12:00:00.000Z");
 
@@ -42,6 +42,29 @@ test("release text skips headings, tables and markup", () => {
   assert.equal(firstProseLine("# Title\n\n| a | b |\n- **索引保护**与 [转义](https://x)"), "索引保护与 转义");
   assert.equal(firstProseLine("## Only a heading"), null);
   assert.equal(firstProseLine("x".repeat(100), 10), `${"x".repeat(9)}…`);
+});
+
+test("release feed copy never ships truncated English", () => {
+  const summaries = { "problem-solution-recorder-oss@v0.2.0": "加固 Markdown 原生排障档案。" };
+  assert.equal(
+    releaseFeedText({ repo: "some-repo", tag: "v1.0.0", body: "This release hardens the archive for safer use.", summaries }),
+    "some-repo 发布 v1.0.0。"
+  );
+  assert.equal(
+    releaseFeedText({ repo: "problem-solution-recorder-oss", tag: "v0.2.0", body: "This release hardens things.", summaries }),
+    "加固 Markdown 原生排障档案。"
+  );
+  assert.equal(
+    releaseFeedText({ repo: "some-repo", tag: "v2.0.0", body: "# 标题\n\n这次把索引写回，并补上验收。", summaries }),
+    "这次把索引写回，并补上验收。"
+  );
+  assert.equal(releaseFeedText({ repo: "some-repo", tag: "v3.0.0", body: "", summaries }), "some-repo 发布 v3.0.0。");
+});
+
+test("hasCJK separates Chinese copy from English release bodies", () => {
+  assert.equal(hasCJK("索引保护"), true);
+  assert.equal(hasCJK("This release hardens"), false);
+  assert.equal(hasCJK(undefined), false);
 });
 
 test("feed links must stay inside the owner's public GitHub or npm scope", () => {

@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { chipFamily, firstProseLine, isOwnedPublicHref, summarizeNpmDoc } from "./studio-semantics.mjs";
+import { releaseSummaries } from "./release-summaries.mjs";
+import { chipFamily, isOwnedPublicHref, releaseFeedText, summarizeNpmDoc } from "./studio-semantics.mjs";
 
 const owner = "rongyishuaige7";
 const requestTimeoutMs = 12_000;
@@ -141,7 +142,7 @@ if (publicRepos) {
           lane: releaseLanes[repo] ?? "see",
           type: "RELEASE",
           title: release.name || `${repo} ${release.tag_name}`,
-          text: firstProseLine(release.body) ?? `${repo} 发布 ${release.tag_name}。`,
+          text: releaseFeedText({ repo, tag: release.tag_name, body: release.body, summaries: releaseSummaries }),
           href: release.html_url
         });
       }
