@@ -19,7 +19,7 @@
     "@fontsource-variable/geist": "^5.2.9",
     "astro": "^7.0.9"
   },
-  "description": "Rongyi personal homepage — Founder of Yi盘 and product builder.",
+  "description": "Rongyi Studio — personal homepage of an independent developer and founder of Yi盘.",
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "typescript": "^6.0.3"
