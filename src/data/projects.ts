@@ -52,8 +52,8 @@ export const toolGroups: ToolGroup[] = [
       {
         slug: "dsh-spec",
         name: "dsh-spec",
-        eyebrow: "DSH SKILLS · SPEC-DRIVEN",
-        summary: "规格驱动开发的 DSH 技能包：先写需求、设计和任务，再按规格实现与验收。",
+        eyebrow: "DSH PLUGIN · THREE SKILLS",
+        summary: "规格驱动开发的 DSH 插件，含写规格、实现、验收三个技能：先写需求、设计和任务，再按规格实现与验收。",
         tags: ["DSH Plugin", "Spec", "npm"],
         href: "https://github.com/rongyishuaige7/dsh-spec"
       },
