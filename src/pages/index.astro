@@ -109,7 +109,7 @@ const hardwareFilters = [
   ...hardwareFamilies.map((family) => ({ key: family.key, label: family.label, count: hardwareProjects.filter((project) => project.family === family.key).length }))
 ].filter((filter) => filter.count > 0);
 const familyLabel = (family: string) => hardwareFamilies.find((item) => item.key === family)?.label ?? "其他";
-const stackLine = (platform: string) => platform.split(" · ").slice(1).join(" · ");
+const stackLine = (platform: string) => platform.split(" · ").slice(1, 4).join(" · ");
 
 const updates = [
   ...studio.updates,
@@ -122,6 +122,8 @@ const sourceNames: Record<string, string> = { publicRepos: "公开仓库列表",
 const degradedSources = Object.entries(studio.sources).filter(([, source]) => source.status !== "ok").map(([key]) => sourceNames[key] ?? key);
 const studioRefreshedAt = minuteFormat.format(new Date(studio.generatedAt));
 
+const signalKindLabel: Record<DisplaySignal["kind"], string> = { release: "发布", ci: "CI", artifact: "构建产物", commit: "提交" };
+
 const proofGroups: Array<{ lane: Lane; items: Array<{ slug: string; name: string; href: string }> }> = [
   { lane: "carry", items: [{ slug: yipan.slug, name: yipan.name, href: yipan.href }] },
   { lane: "see", items: [{ slug: dshUsage.slug, name: dshUsage.name, href: dshUsage.href }, ...toolGroups.flatMap((group) => group.tools.map((tool) => ({ slug: tool.slug, name: tool.name, href: tool.href })))] },
@@ -129,7 +131,7 @@ const proofGroups: Array<{ lane: Lane; items: Array<{ slug: string; name: string
 ];
 function proofRows(item: { slug: string; name: string; href: string }) {
   const signals = evidenceSignals(item.slug);
-  if (signals.length > 0) return signals.map((signal, index) => ({ ...signal, slug: item.slug, name: index === 0 ? item.name : `${item.name} · 其他记录` }));
+  if (signals.length > 0) return signals.map((signal, index) => ({ ...signal, slug: item.slug, name: index === 0 ? item.name : `${item.name} · ${signalKindLabel[signal.kind]}` }));
   if (item.slug === yipan.slug) return [{ kind: "commit" as const, label: "产品事实与路线图已公开", href: item.href, tone: "neutral" as const, slug: item.slug, name: item.name }];
   const commit = repoStatus[item.slug] ? commitSignal(repoStatus[item.slug]) : null;
   return [{ ...(commit ?? { kind: "commit" as const, label: "尚未配置自动检查", href: item.href, tone: "neutral" as const }), slug: item.slug, name: item.name }];
@@ -407,7 +409,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
                     <div class="hw-top"><span class="hw-chip">{project.chip}</span><i class="hw-led" aria-hidden="true"></i></div>
                     <h3><a href={project.repo} target="_blank" rel="noreferrer">{hardwareShortNames[project.slug] ?? project.name}</a></h3>
                     <p>{project.summary}</p>
-                    <span class="hw-stack"><span class="visually-hidden">{familyLabel(project.family)} · </span>{stackLine(project.platform)}</span>
+                    <span class="hw-stack" title={project.platform}><span class="visually-hidden">{familyLabel(project.family)} · </span>{stackLine(project.platform)}</span>
                   </div>
                 </li>
               ))}
