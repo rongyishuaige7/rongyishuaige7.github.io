@@ -90,22 +90,33 @@ function trackActiveLane() {
   const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-lane-nav] a[href^='#']")];
   const ids = [...new Set(links.map((link) => link.hash.slice(1)))];
   const sections = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null);
-  if (sections.length === 0 || !("IntersectionObserver" in window)) return;
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        const hash = `#${entry.target.id}`;
-        for (const link of links) {
-          if (link.hash !== hash) continue;
-          link.classList.toggle("is-active", entry.isIntersecting);
-          if (entry.isIntersecting) link.setAttribute("aria-current", "location");
-          else link.removeAttribute("aria-current");
-        }
-      }
-    },
-    { rootMargin: "-45% 0px -50% 0px" }
-  );
-  sections.forEach((section) => observer.observe(section));
+  if (sections.length === 0) return;
+  let queued = false;
+  // One lane at a time: whichever section crosses the 45% line owns the
+  // highlight, so overlapping sections can never light two links at once.
+  const update = () => {
+    queued = false;
+    const line = window.innerHeight * 0.45;
+    const current =
+      sections.find((section) => {
+        const rect = section.getBoundingClientRect();
+        return rect.top <= line && rect.bottom > line;
+      })?.id ?? "";
+    for (const link of links) {
+      const active = link.hash === `#${current}`;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    }
+  };
+  const schedule = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  };
+  update();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule, { passive: true });
 }
 
 function initHardwareFilters() {
