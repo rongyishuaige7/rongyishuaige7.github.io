@@ -1,61 +1,36 @@
 ---
 import "@fontsource-variable/geist/index.css";
 import "../styles/global.css";
-import { projects } from "../data/projects";
-import { manualUpdates as buildLog } from "../data/build-log";
+import "../styles/studio.css";
+import { Image } from "astro:assets";
+import timelineShot from "../assets/dsh/timeline-panel.png";
+import overviewShot from "../assets/dsh/overview-panel.png";
+import { dshUsage, hardwareFamilies, hardwareFeatured, hardwareShortNames, laneMeta, toolGroups, yipan } from "../data/projects";
+import { manualUpdates } from "../data/build-log";
+import type { Lane } from "../data/build-log";
 import githubStatus from "../data/github-status.json";
+import studioData from "../data/studio.json";
 
-const refreshedAt = new Intl.DateTimeFormat("zh-CN", {
-  timeZone: "Asia/Shanghai",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false
-}).format(new Date(githubStatus.generatedAt));
+const timeZone = "Asia/Shanghai";
+const minuteFormat = new Intl.DateTimeFormat("zh-CN", { timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
+const dayFormat = new Intl.DateTimeFormat("zh-CN", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+const numberFormat = new Intl.NumberFormat("zh-CN");
+const formatDay = (iso: string) => dayFormat.format(new Date(iso)).replaceAll("/", ".");
+const isoDay = (iso: string) => formatDay(iso).replaceAll(".", "-");
+const refreshedAt = minuteFormat.format(new Date(githubStatus.generatedAt));
 
-type CiSignal = {
-  status: string;
-  conclusion?: string | null;
-  url?: string;
-  headSha?: string;
-  runAt?: string;
-  ageHours?: number;
-};
-
-type ReleaseSignal = {
-  status: string;
-  tag?: string;
-  url?: string;
-  publishedAt?: string;
-};
-
-type ArtifactSignal = {
-  status: string;
-  artifacts?: Array<{ name: string; url: string; expiresAt: string; expired: boolean }>;
-};
-
-type RepositoryStatus = {
-  url: string;
-  headSha: string | null;
-  ci: CiSignal;
-  release: ReleaseSignal;
-  artifact: ArtifactSignal;
-};
-
+type CiSignal = { status: string; conclusion?: string | null; url?: string; headSha?: string; runAt?: string };
+type ReleaseSignal = { status: string; tag?: string; url?: string; publishedAt?: string };
+type ArtifactSignal = { status: string; artifacts?: Array<{ name: string; url: string; expiresAt: string; expired: boolean }> };
+type RepositoryStatus = { url: string; headSha: string | null; headCommittedAt?: string | null; ci: CiSignal; release: ReleaseSignal; artifact: ArtifactSignal };
 type DisplaySignal = {
-  kind: "ci" | "release" | "artifact";
+  kind: "ci" | "release" | "artifact" | "commit";
   label: string;
   href: string;
   tone: "pass" | "release" | "running" | "failure" | "stale" | "neutral";
 };
 
-const repoStatus = githubStatus.repositories as Record<string, RepositoryStatus>;
-const dayFormat = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" });
-function formatDay(iso: string) {
-  return dayFormat.format(new Date(iso)).replaceAll("/", ".");
-}
+const repoStatus = githubStatus.repositories as unknown as Record<string, RepositoryStatus>;
 const statusSourceUrl = "https://github.com/rongyishuaige7/rongyishuaige7.github.io/blob/main/scripts/fetch-github-status.mjs";
 
 function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
@@ -64,46 +39,39 @@ function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
   if (ci.status === "not_configured") return null;
   if (ci.status === "unknown") return { kind: "ci", label: "暂时无法确认 CI 状态", href, tone: "neutral" };
   if (ci.status === "unverified") return { kind: "ci", label: "最新提交尚未验证", href, tone: "neutral" };
-  if (ci.status === "queued" || ci.status === "in_progress" || ci.status === "requested" || ci.status === "waiting" || ci.status === "pending") {
-    return { kind: "ci", label: "当前版本正在运行 CI", href, tone: "running" };
-  }
+  if (["queued", "in_progress", "requested", "waiting", "pending"].includes(ci.status)) return { kind: "ci", label: "当前版本正在运行 CI", href, tone: "running" };
   if (ci.status === "completed" && ci.conclusion === "success") {
-    const day = ci.runAt ? ` · ${formatDay(ci.runAt)}` : "";
-    return { kind: "ci", label: `当前版本 CI 通过${day}`, href, tone: "pass" };
+    return { kind: "ci", label: `当前版本 CI 通过${ci.runAt ? ` · ${formatDay(ci.runAt)}` : ""}`, href, tone: "pass" };
   }
   if (ci.status === "completed") return { kind: "ci", label: `当前版本 CI ${ci.conclusion ?? "状态未知"}`, href, tone: "failure" };
   return { kind: "ci", label: "暂时无法确认 CI 状态", href, tone: "neutral" };
 }
-
 function releaseSignal(signal: RepositoryStatus): DisplaySignal | null {
   const release = signal.release;
-  if (release.status === "available" && release.tag && release.url) {
-    return { kind: "release", label: `已发布 ${release.tag}`, href: release.url, tone: "release" };
-  }
+  if (release.status === "available" && release.tag && release.url) return { kind: "release", label: `已发布 ${release.tag}`, href: release.url, tone: "release" };
   if (release.status === "unknown") return { kind: "release", label: "暂时无法确认发布状态", href: signal.url, tone: "neutral" };
   return null;
 }
 
 function artifactSignal(signal: RepositoryStatus): DisplaySignal | null {
   const artifact = signal.artifact;
-  const first = artifact.artifacts?.find(
-    (item) => !item.expired && Number.isFinite(Date.parse(item.expiresAt)) && Date.parse(item.expiresAt) > Date.now()
-  );
-  if (artifact.status === "available" && first) {
-    const expires = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(first.expiresAt));
-    return { kind: "artifact", label: `固件构建产物保留至 ${expires}`, href: first.url, tone: "pass" };
-  }
-  if (artifact.status === "available") return { kind: "artifact", label: "固件构建产物已过期", href: signal.url, tone: "stale" };
-  if (artifact.status === "expired") return { kind: "artifact", label: "固件构建产物已过期", href: signal.url, tone: "stale" };
+  const first = artifact.artifacts?.find((item) => !item.expired && Number.isFinite(Date.parse(item.expiresAt)) && Date.parse(item.expiresAt) > Date.now());
+  if (artifact.status === "available" && first) return { kind: "artifact", label: `固件构建产物保留至 ${formatDay(first.expiresAt)}`, href: first.url, tone: "pass" };
+  if (artifact.status === "available" || artifact.status === "expired") return { kind: "artifact", label: "固件构建产物已过期", href: signal.url, tone: "stale" };
   if (artifact.status === "unknown") return { kind: "artifact", label: "暂时无法确认构建产物", href: signal.url, tone: "neutral" };
   if (artifact.status === "unavailable" || artifact.status === "none") return { kind: "artifact", label: "当前没有固件构建产物", href: signal.url, tone: "neutral" };
   return null;
 }
 
+function commitSignal(signal: RepositoryStatus): DisplaySignal | null {
+  if (!signal.headCommittedAt) return null;
+  return { kind: "commit", label: `最近提交 ${formatDay(signal.headCommittedAt)}`, href: `${signal.url}/commits`, tone: "neutral" };
+}
+
 function primarySignal(slug: string): DisplaySignal | null {
   const signal = repoStatus[slug];
   if (!signal) return null;
-  return ciSignal(signal) ?? releaseSignal(signal) ?? artifactSignal(signal);
+  return ciSignal(signal) ?? releaseSignal(signal) ?? artifactSignal(signal) ?? commitSignal(signal);
 }
 
 function evidenceSignals(slug: string): DisplaySignal[] {
@@ -112,35 +80,79 @@ function evidenceSignals(slug: string): DisplaySignal[] {
   return [releaseSignal(signal), ciSignal(signal), artifactSignal(signal)].filter((item): item is DisplaySignal => item !== null);
 }
 
-const title = "Rongyi — Yi盘创始人";
-const description = "Rongyi 的个人主页。正在开发 Yi盘，一套装在 U 盘里的随身 AI 工作台；也在做桌面工具和硬件项目。";
+// "Recent" is measured against the status snapshot, so a build is deterministic for its data.
+const snapshotAt = Date.parse(githubStatus.generatedAt);
+function isRecent(slug: string) {
+  const committed = Date.parse(repoStatus[slug]?.headCommittedAt ?? "");
+  return Number.isFinite(committed) && snapshotAt - committed <= 30 * 86_400_000;
+}
+
+type NpmSummary = { status?: string; latest?: string; publishedAt?: string; versionCount?: number; versionsLast30Days?: number; downloadsLastMonth?: number | null; url?: string };
+type HardwareProject = { slug: string; name: string; repo: string; platform: string; family: string; chip: string; summary: string };
+type StudioData = {
+  generatedAt: string;
+  sources: Record<string, { status: string }>;
+  npm: Record<string, NpmSummary>;
+  hardware: { status: string; indexUrl: string; statusDate?: string | null; projects: HardwareProject[] };
+  updates: Array<{ date: string; lane: Lane; type: string; title: string; text: string; href: string }>;
+};
+const studio = studioData as unknown as StudioData;
+const dshNpm = studio.npm["@rongyi7/dsh-stats"] ?? {};
+const dshDownloads = typeof dshNpm.downloadsLastMonth === "number" ? dshNpm.downloadsLastMonth : null;
+const dshSignal = primarySignal(dshUsage.slug);
+
+const hardwareOk = studio.hardware.status === "ok" && studio.hardware.projects.length > 0;
+const hardwareProjects = studio.hardware.projects;
+const hardwareSignal = primarySignal("hardware-lab");
+const hardwareFilters = [
+  { key: "all", label: "全部", count: hardwareProjects.length },
+  ...hardwareFamilies.map((family) => ({ key: family.key, label: family.label, count: hardwareProjects.filter((project) => project.family === family.key).length }))
+].filter((filter) => filter.count > 0);
+const familyLabel = (family: string) => hardwareFamilies.find((item) => item.key === family)?.label ?? "其他";
+const stackLine = (platform: string) => platform.split(" · ").slice(1).join(" · ");
+
+const updates = [
+  ...studio.updates,
+  ...manualUpdates.map((item) => ({ ...item, date: `${item.date}T00:00:00+08:00` }))
+]
+  .filter((item) => Number.isFinite(Date.parse(item.date)))
+  .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+  .slice(0, 8);
+const sourceNames: Record<string, string> = { publicRepos: "公开仓库列表", npm: "npm", hardware: "Hardware Lab 索引", releases: "GitHub Releases" };
+const degradedSources = Object.entries(studio.sources).filter(([, source]) => source.status !== "ok").map(([key]) => sourceNames[key] ?? key);
+const studioRefreshedAt = minuteFormat.format(new Date(studio.generatedAt));
+
+const proofGroups: Array<{ lane: Lane; items: Array<{ slug: string; name: string; href: string }> }> = [
+  { lane: "carry", items: [{ slug: yipan.slug, name: yipan.name, href: yipan.href }] },
+  { lane: "see", items: [{ slug: dshUsage.slug, name: dshUsage.name, href: dshUsage.href }, ...toolGroups.flatMap((group) => group.tools.map((tool) => ({ slug: tool.slug, name: tool.name, href: tool.href })))] },
+  { lane: "touch", items: [{ slug: "hardware-lab", name: "Hardware Lab 索引", href: "https://github.com/rongyishuaige7/hardware-lab" }, { slug: "ESP32_RPS_Game", name: "ESP32 RPS Game", href: "https://github.com/rongyishuaige7/ESP32_RPS_Game" }] }
+];
+function proofRows(item: { slug: string; name: string; href: string }) {
+  const signals = evidenceSignals(item.slug);
+  if (signals.length > 0) return signals.map((signal, index) => ({ ...signal, slug: item.slug, name: index === 0 ? item.name : `${item.name} · 其他记录` }));
+  if (item.slug === yipan.slug) return [{ kind: "commit" as const, label: "产品事实与路线图已公开", href: item.href, tone: "neutral" as const, slug: item.slug, name: item.name }];
+  const commit = repoStatus[item.slug] ? commitSignal(repoStatus[item.slug]) : null;
+  return [{ ...(commit ?? { kind: "commit" as const, label: "尚未配置自动检查", href: item.href, tone: "neutral" as const }), slug: item.slug, name: item.name }];
+}
+const iconClass = (tone: DisplaySignal["tone"]) => (tone === "pass" || tone === "release" ? "ok" : tone === "failure" ? "failure" : "document");
+
+const toolIndex = new Map<string, string>([[dshUsage.slug, "01"]]);
+toolGroups.flatMap((group) => group.tools).forEach((tool, index) => toolIndex.set(tool.slug, String(index + 2).padStart(2, "0")));
+
+const title = "Rongyi — 独立开发者 · Yi盘创始人";
+const description = "Rongyi 的个人主页。主线是 Yi盘，一套装在 U 盘里的随身 AI 工作台；同时做让 Agent 工作看得见的工具，以及 ESP32、STM32、树莓派硬件原型。";
 const siteUrl = "https://rongyishuaige7.github.io/";
 const socialImage = `${siteUrl}og-card.png`;
-const socialImageAlt = "Rongyi 与 Yi盘 — 让 AI 的上下文，跟着人走。";
+const socialImageAlt = "Rongyi Studio：随身的上下文、看得见的 Agent、摸得着的硬件。";
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
-    {
-      "@type": "Person",
-      "@id": `${siteUrl}#person`,
-      name: "Rongyi",
-      url: siteUrl,
-      sameAs: ["https://github.com/rongyishuaige7"],
-      jobTitle: "Founder of Yi盘"
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${siteUrl}#website`,
-      url: siteUrl,
-      name: "Rongyi / Yi盘",
-      description,
-      inLanguage: "zh-CN",
-      publisher: { "@id": `${siteUrl}#person` }
-    }
+    { "@type": "Person", "@id": `${siteUrl}#person`, name: "Rongyi", url: siteUrl, sameAs: ["https://github.com/rongyishuaige7"], jobTitle: "Independent developer, founder of Yi盘" },
+    { "@type": "WebSite", "@id": `${siteUrl}#website`, url: siteUrl, name: "Rongyi Studio", description, inLanguage: "zh-CN", publisher: { "@id": `${siteUrl}#person` } }
   ]
 };
+const lanes: Lane[] = ["carry", "see", "touch"];
 ---
-
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -151,9 +163,9 @@ const structuredData = {
     <meta name="color-scheme" content="dark" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={siteUrl} />
-    <meta property="og:title" content="Rongyi / Yi盘" />
+    <meta property="og:title" content="Rongyi Studio" />
     <meta property="og:description" content={description} />
-    <meta property="og:site_name" content="Rongyi / Yi盘" />
+    <meta property="og:site_name" content="Rongyi Studio" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:image" content={socialImage} />
     <meta property="og:image:type" content="image/png" />
@@ -161,7 +173,7 @@ const structuredData = {
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={socialImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Rongyi / Yi盘" />
+    <meta name="twitter:title" content="Rongyi Studio" />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
@@ -170,182 +182,318 @@ const structuredData = {
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+    <script is:inline>
+      // Hide reveal targets only when scripts run, and show everything again if motion never starts.
+      document.documentElement.classList.add("js");
+      setTimeout(function () {
+        if (!document.documentElement.classList.contains("motion-ready")) document.documentElement.classList.remove("js");
+      }, 4000);
+    </script>
     <title>{title}</title>
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
+    <div class="scroll-progress" data-progress aria-hidden="true"></div>
     <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
 
     <header class="site-header" data-header>
       <a class="wordmark" href="#top" aria-label="RONGYI 首页">
-        <span>R</span><b>RONGYI</b><small>/ YI盘</small>
+        <span>R</span><b>RONGYI</b><small>/ STUDIO</small>
       </a>
-      <nav aria-label="主导航"><a href="#work">项目</a><a href="#proof">进展</a><a href="#log">更新</a></nav>
+      <nav aria-label="主导航" data-lane-nav>
+        {lanes.map((lane) => <a href={laneMeta[lane].href} data-lane={lane}><i aria-hidden="true"></i>{laneMeta[lane].short}</a>)}
+        <a href="#log"><i aria-hidden="true"></i>更新</a>
+      </nav>
       <a class="header-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a>
     </header>
-    <nav class="mobile-nav" aria-label="移动端章节导航"><a href="#work">项目</a><a href="#proof">进展</a><a href="#log">更新</a></nav>
-
+    <nav class="mobile-nav" aria-label="移动端章节导航" data-lane-nav>
+      {lanes.map((lane) => <a href={laneMeta[lane].href} data-lane={lane}><i aria-hidden="true"></i>{laneMeta[lane].short}</a>)}
+      <a href="#log"><i aria-hidden="true"></i>更新</a>
+    </nav>
     <main id="main">
-      <section class="hero" id="top" data-section="00">
-        <div class="hero-copy reveal">
-          <p class="eyebrow"><span class="pulse"></span> RONGYI · YI盘</p>
-          <h1><span class="headline-line">让 AI 的上下文，</span><span class="headline-line is-accent">跟着人走。</span></h1>
-          <p class="hero-intro">我是 Rongyi，正在做 Yi盘——一套装在 U 盘里的随身 AI 工作台。长期资料、任务记录和主要产出留在盘里；我也在做桌面工具和硬件项目。</p>
-          <div class="hero-actions">
-            <a class="button primary" href="https://github.com/rongyishuaige7/yipan-showcase" target="_blank" rel="noreferrer">查看 Yi盘进展 <span>↗</span></a>
-            <a class="button secondary" href="#work">查看项目 <span>↓</span></a>
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow hero-enter" style="--d:0s"><span class="pulse"></span> RONGYI · 独立开发者 · YI盘创始人</p>
+          <h1>
+            <span class="headline-line" data-lane="carry" style="--d:.05s;--ud:.75s"><span class="lane-word">随身</span>的上下文，</span>
+            <span class="headline-line" data-lane="see" style="--d:.15s;--ud:.95s"><span class="lane-word">看得见</span>的 Agent，</span>
+            <span class="headline-line" data-lane="touch" style="--d:.25s;--ud:1.15s"><span class="lane-word">摸得着</span>的硬件。</span>
+          </h1>
+          <p class="hero-intro hero-enter" style="--d:.35s">我是 Rongyi，一个人做产品的独立开发者。主线是 <b data-lane="carry">Yi盘</b>——装在 U 盘里的随身 AI 工作台；同时做让 <b data-lane="see">Agent 工作看得见</b>的工具，以及 <b data-lane="touch">ESP32、STM32 与树莓派</b>上的硬件原型。</p>
+          <div class="hero-actions hero-enter" style="--d:.45s">
+            <a class="button primary" href={yipan.href} target="_blank" rel="noreferrer">查看 Yi盘进展 <span>↗</span></a>
+            <a class="button secondary" href="#carry">看三条线 <span>↓</span></a>
           </div>
         </div>
 
-        <figure class="context-machine reveal" aria-labelledby="context-machine-caption">
-          <figcaption id="context-machine-caption" class="visually-hidden">功能示意：任务、长期资料与项目背景通过 Yi盘工作台供已接入的 AI 工具使用，非产品截图。</figcaption>
-          <div class="machine-topline"><span>YI盘 / 工作资料流转示意</span><span class="online"><i></i> 非产品截图</span></div>
-          <div class="machine-grid" aria-hidden="true">
-            <div class="source-stack">
-              <div class="source"><span>01</span><b>WORK</b><small>任务 / 产出</small></div>
-              <div class="source"><span>02</span><b>KNOWLEDGE</b><small>长期资料</small></div>
-              <div class="source"><span>03</span><b>CONTEXT</b><small>项目背景</small></div>
+        <figure class="studio-map hero-enter" style="--d:.2s" data-loop aria-labelledby="studio-map-caption">
+          <figcaption id="studio-map-caption" class="visually-hidden">工作室示意图：Yi盘居中，左侧是 Agent 工具，右侧是硬件原型；非产品截图。</figcaption>
+          <div class="map-topline"><span>RONGYI STUDIO / 三条线示意</span><span class="online"><i></i> 非产品截图</span></div>
+          <div class="map-grid" aria-hidden="true">
+            <div class="map-zone zone-see" data-lane="see">
+              <div class="zone-label"><b>AGENT 工具</b><small>可见</small></div>
+              <div class="usage-bars">{[0.42, 0.78, 0.96, 0.55, 0.3, 0.62, 0.84, 0.48, 0.24, 0.7].map((h, i) => <i style={`--h:${h};--i:${i}`}></i>)}</div>
+              <span class="bars-caption">TOKENS / 30 MIN</span>
+              <ul class="session-list">
+                <li><i class="s-run"></i>SESSION 01<em>RUN</em></li>
+                <li><i class="s-idle"></i>SESSION 02<em>IDLE</em></li>
+                <li><i class="s-done"></i>SESSION 03<em>DONE</em></li>
+              </ul>
             </div>
-            <div class="route route-left"><i class="packet packet-a"></i><i class="packet packet-b"></i></div>
-            <div class="yipan-core">
-              <span class="core-orbit orbit-a"></span><span class="core-orbit orbit-b"></span>
-              <div class="core-mark"><span class="brand-latin">YI</span><span class="brand-cjk">盘</span></div>
-              <small>PORTABLE<br />WORKSPACE</small>
+            <div class="map-route route-see" data-lane="see"><i class="packet"></i><i class="packet late"></i></div>
+            <div class="map-core" data-lane="carry">
+              <div class="yipan-core">
+                <span class="core-orbit orbit-a"></span><span class="core-orbit orbit-b"></span><span class="core-orbit orbit-c"></span>
+                <div class="core-mark"><span class="brand-latin">YI</span><span class="brand-cjk">盘</span></div>
+                <small>PORTABLE<br />CONTEXT</small>
+              </div>
             </div>
-            <div class="route route-right"><i class="packet packet-c"></i></div>
-            <div class="agent-stack">
-              <div><i></i><b>AGENT 01</b><small>ROLE</small></div>
-              <div><i></i><b>AGENT 02</b><small>ROLE</small></div>
-              <div><i></i><b>AGENT 03</b><small>ROLE</small></div>
+            <div class="map-route route-touch" data-lane="touch"><i class="packet"></i><i class="packet late"></i></div>
+            <div class="map-zone zone-touch" data-lane="touch">
+              <div class="zone-label"><b>硬件原型</b><small>可触</small></div>
+              <svg class="mini-board" viewBox="0 0 180 104" role="presentation">
+                <defs><filter id="led-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" /></filter></defs>
+                <rect class="board-edge" x="1" y="1" width="178" height="102" rx="8" />
+                <path class="board-pins" d="M34 30v-6M42 30v-6M50 30v-6M58 30v-6M66 30v-6M34 74v6M42 74v6M50 74v6M58 74v6M66 74v6" />
+                <rect class="board-chip" x="26" y="30" width="48" height="44" rx="4" />
+                <text class="board-chip-label" x="50" y="55">MCU</text>
+                <path class="board-trace" d="M74 40H104L118 26H146" /><path class="board-trace" d="M74 52H146" /><path class="board-trace" d="M74 64H104L118 78H146" />
+                <path class="board-pulse p1" pathLength="100" d="M74 40H104L118 26H146" /><path class="board-pulse p2" pathLength="100" d="M74 52H146" /><path class="board-pulse p3" pathLength="100" d="M74 64H104L118 78H146" />
+                <circle class="board-via" cx="104" cy="40" r="2.5" /><circle class="board-via" cx="104" cy="64" r="2.5" />
+                <circle class="board-led-glow l1" filter="url(#led-blur)" cx="154" cy="26" r="10" /><circle class="board-led-glow l2" filter="url(#led-blur)" cx="154" cy="52" r="10" /><circle class="board-led-glow l3" filter="url(#led-blur)" cx="154" cy="78" r="10" />
+                <circle class="board-led l1" cx="154" cy="26" r="5" /><circle class="board-led l2" cx="154" cy="52" r="5" /><circle class="board-led l3" cx="154" cy="78" r="5" />
+              </svg>
+              <div class="board-tags"><span>ESP32</span><span>STM32</span><span>RPi</span></div>
             </div>
           </div>
-          <div class="machine-footer"><span>盘内资料</span><span>由用户管理</span><span>云端模型</span></div>
+          <div class="map-legend">
+            {(["see", "carry", "touch"] as Lane[]).map((lane) => (
+              <a href={laneMeta[lane].href} data-lane={lane}><i aria-hidden="true"></i><b>{laneMeta[lane].word}</b><small>{laneMeta[lane].short}</small></a>
+            ))}
+          </div>
         </figure>
-
-        <div class="scroll-note" aria-hidden="true"><span></span> 继续查看项目</div>
       </section>
-
-      <section class="work section-shell" id="work" aria-labelledby="work-title" data-section="01">
+      <section class="lane section-shell" id="carry" data-lane="carry" aria-labelledby="carry-title">
+        <div class="lane-rail" data-reveal aria-hidden="true"></div>
         <div class="section-heading reveal">
-          <div><p class="section-index">01 / PROJECTS</p><h2 id="work-title">正在做的项目</h2></div>
-          <p>下面是我正在维护的公开项目。每个项目都列出当前进度、已知限制和可查看的构建记录。</p>
+          <div><p class="section-index"><span>01</span>随身 · CARRY</p><h2 id="carry-title"><span class="statement-line">上下文，</span><span class="statement-line"><em>跟着人走。</em></span></h2></div>
+          <p>Yi盘是我的主线产品。长期资料和任务记录放在盘里，换电脑、换 Agent 都能接着干。</p>
         </div>
-
-        {projects.map((project) => {
-          const signal = primarySignal(project.slug);
-          return project.featured ? (
-            <article class="project-featured reveal">
-              <div class="project-main">
-                <p class="eyebrow">{project.eyebrow}</p>
-                <h3 class="project-title"><span class="project-title-latin">Yi</span><span class="project-title-cjk">盘</span></h3>
-                <p class="project-summary">{project.summary}</p>
-                <div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
-                <div class="project-links">
-                  <a class="button primary" href={project.href} target="_blank" rel="noreferrer">查看公开仓库 <span>↗</span></a>
-                  <span class="status active"><i></i>{project.status}</span>
-                </div>
-                {project.caveat && <p class="caveat">当前限制 · {project.caveat}</p>}
+        <article class="project-featured reveal">
+          <div class="project-main">
+            <p class="eyebrow">{yipan.eyebrow}</p>
+            <h3 class="project-title"><span class="project-title-latin">Yi</span><span class="project-title-cjk">盘</span></h3>
+            <p class="project-summary">{yipan.summary}</p>
+            <div class="tags">{yipan.tags.map((tag) => <span>{tag}</span>)}</div>
+            <div class="project-links">
+              <a class="button primary" href={yipan.href} target="_blank" rel="noreferrer">查看公开仓库 <span>↗</span></a>
+              <span class="status active"><i></i>{yipan.status}</span>
+            </div>
+            {yipan.caveat && <p class="caveat">当前限制 · {yipan.caveat}</p>}
+          </div>
+          <figure class="yipan-blueprint" data-loop aria-labelledby="yipan-blueprint-caption">
+            <figcaption id="yipan-blueprint-caption" class="visually-hidden">Yi盘功能示意图，非产品截图。</figcaption>
+            <div class="blueprint-label">功能示意 · 非产品截图</div>
+            <div class="drive-body">
+              <div class="drive-port"><i></i><i></i><i></i></div>
+              <div class="drive-face">
+                <b class="drive-brand"><span class="brand-latin">YI</span><span class="brand-cjk">盘</span></b><small>PORTABLE AGENT WORKSPACE</small>
+                <div class="drive-lines"><i></i><i></i><i></i></div>
               </div>
-              <figure class="yipan-blueprint" aria-labelledby="yipan-blueprint-caption">
-                <figcaption id="yipan-blueprint-caption" class="visually-hidden">Yi盘功能示意图，非产品截图。</figcaption>
-                <div class="blueprint-label">功能示意 · 非产品截图</div>
-                <div class="drive-body">
-                  <div class="drive-port"><i></i><i></i><i></i></div>
-                  <div class="drive-face">
-                    <b class="drive-brand"><span class="brand-latin">YI</span><span class="brand-cjk">盘</span></b><small>PORTABLE AGENT WORKSPACE</small>
-                    <div class="drive-lines"><i></i><i></i><i></i></div>
-                  </div>
-                </div>
-                <div class="capability-row"><span>INBOX</span><span>VAULT</span><span>AGENTS</span><span>BYOK</span></div>
-                <div class="proof-note"><i></i> 盘内资料 · 用户管理 · 云端模型</div>
-              </figure>
-            </article>
-          ) : (
-            <article class="project-row reveal">
-              <div class="project-number">{project.index}</div>
-              <div class="project-copy">
-                <p class="eyebrow">{project.eyebrow}</p>
-                <h3>{project.name}</h3>
-                <p>{project.summary}</p>
-                {project.caveat && <small class="caveat">{project.caveat}</small>}
-              </div>
-              <div class="project-meta">
-                <div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
-                {signal ? <a class={`live-signal ${signal.tone}`} href={signal.href} target="_blank" rel="noreferrer" data-ci-status={signal.kind === "ci" ? repoStatus[project.slug]?.ci.status : undefined} data-ci-run-at={signal.kind === "ci" ? repoStatus[project.slug]?.ci.runAt : undefined} data-artifact-status={signal.kind === "artifact" ? repoStatus[project.slug]?.artifact.status : undefined} data-artifact-expires-at={signal.kind === "artifact" ? repoStatus[project.slug]?.artifact.artifacts?.find((item) => !item.expired)?.expiresAt : undefined}><i></i><span data-signal-label>{signal.label}</span> ↗</a> : <span class="status"><i></i>{project.status}</span>}
-              </div>
-              <a class="project-arrow" href={project.href} target="_blank" rel="noreferrer" aria-label={`打开 ${project.name} 仓库`}><span class="project-arrow-label">仓库</span><span aria-hidden="true">↗</span></a>
-            </article>
-          );
-        })}
-        <p class="data-note reveal">以上 GitHub 状态更新于 {refreshedAt} CST。CI 只认指定工作流在当前默认分支 HEAD 上的运行；最新提交未验证、失败或无法确认时会直接标出。<a href={statusSourceUrl} target="_blank" rel="noopener noreferrer">查看检查方法 ↗</a></p>
+            </div>
+            <div class="capability-row"><span>INBOX</span><span>VAULT</span><span>AGENTS</span><span>BYOK</span></div>
+            <div class="proof-note"><i></i> 盘内资料 · 用户管理 · 云端模型</div>
+          </figure>
+        </article>
       </section>
 
-      <section class="proof section-shell" id="proof" aria-labelledby="proof-title" data-section="02">
-        <div class="proof-copy reveal">
-          <p class="section-index">02 / GITHUB STATUS</p>
-          <h2 id="proof-title"><span class="headline-line">少一点宣称，</span><span class="headline-line">多一点<span class="is-accent">可检查的证据。</span></span></h2>
-          <p>版本、CI 和构建产物直接来自 GitHub。点击即可查看对应的发布、运行记录或下载期限。</p>
-          <a class="text-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">查看全部公开仓库 ↗</a>
-        </div>
-        <div class="signal-panel reveal">
-          <div class="signal-header"><span>GITHUB 状态快照</span><small>截至 {refreshedAt} CST</small></div>
-          {projects.flatMap((project) => {
-            const signals = evidenceSignals(project.slug);
-            if (signals.length === 0) {
-              const label = project.slug === "yipan" ? "产品事实与路线图已公开" : "尚未配置自动检查";
-              return [<a class="signal-row neutral" href={project.href} target="_blank" rel="noopener noreferrer"><i class="document"></i><b>{project.name}</b><span>{label}</span><em>↗</em></a>];
-            }
-            return signals.map((signal, index) => {
-              const isCi = signal.kind === "ci";
-              const isArtifact = signal.kind === "artifact";
-              return <a class={`signal-row ${signal.tone}`} href={signal.href} target="_blank" rel="noopener noreferrer" data-ci-status={isCi ? repoStatus[project.slug]?.ci.status : undefined} data-ci-run-at={isCi ? repoStatus[project.slug]?.ci.runAt : undefined} data-artifact-status={isArtifact ? repoStatus[project.slug]?.artifact.status : undefined} data-artifact-expires-at={isArtifact ? repoStatus[project.slug]?.artifact.artifacts?.find((item) => !item.expired)?.expiresAt : undefined}><i class={signal.tone === "pass" || signal.tone === "release" ? "ok" : signal.tone === "failure" ? "failure" : "document"}></i><b>{index === 0 ? project.name : `${project.name} · 其他记录`}</b><span data-signal-label>{signal.label}</span><em>↗</em></a>;
-            });
-          })}
-        </div>
-      </section>
-
-      <section class="build-log section-shell" id="log" aria-labelledby="log-title" data-section="03">
+      <section class="lane section-shell" id="see" data-lane="see" aria-labelledby="see-title">
+        <div class="lane-rail" data-reveal aria-hidden="true"></div>
         <div class="section-heading reveal">
-          <div><p class="section-index">03 / RECENT UPDATES</p><h2 id="log-title">最近更新</h2></div>
-          <p>我最近发布、测试或复盘的内容。</p>
+          <div><p class="section-index"><span>02</span>可见 · SEE</p><h2 id="see-title"><span class="statement-line">看得见，</span><span class="statement-line"><em>才管得住。</em></span></h2></div>
+          <p>Agent 用了多少、花了多少、为什么这样写，都应该能查。下面是我给自己做、也公开发布的工具。</p>
         </div>
-        <div class="log-grid">
-          {buildLog.map((item) => (
-            <a class="log-entry reveal" href={item.href} target="_blank" rel="noreferrer">
-              <div><span>{item.type}</span><time datetime={item.date.replaceAll(".", "-")}>{item.date}</time></div>
-              <h3>{item.title}</h3><p>{item.text}</p><i>READ ↗</i>
-            </a>
+        <article class="spotlight reveal">
+          <div>
+            <p class="eyebrow">{toolIndex.get(dshUsage.slug)} · {dshUsage.eyebrow}</p>
+            <h3>DSH <span>Usage</span>{isRecent(dshUsage.slug) && <i class="recent-dot" aria-hidden="true"></i>}</h3>
+            <p class="project-summary">{dshUsage.summary}</p>
+            <div class="tags">{dshUsage.tags.map((tag) => <span>{tag}</span>)}</div>
+            <dl class="metric-strip">
+              <div><dt>近 30 天下载</dt>{dshDownloads !== null ? <dd data-count={dshDownloads}>{numberFormat.format(dshDownloads)}</dd> : <dd class="is-unknown">暂不可用</dd>}</div>
+              <div><dt>npm 最新版本</dt>{dshNpm.latest ? <dd>{dshNpm.latest}</dd> : <dd class="is-unknown">暂不可用</dd>}</div>
+              <div><dt>已发布版本</dt>{typeof dshNpm.versionCount === "number" ? <dd data-count={dshNpm.versionCount}>{numberFormat.format(dshNpm.versionCount)}</dd> : <dd class="is-unknown">暂不可用</dd>}</div>
+            </dl>
+            <div class="project-links">
+              <a class="button lane-primary" href={dshUsage.href} target="_blank" rel="noreferrer">查看仓库 <span>↗</span></a>
+              {dshNpm.url && <a class="button secondary" href={dshNpm.url} target="_blank" rel="noreferrer">npm <span>↗</span></a>}
+              {dshSignal && <a class={`signal-chip ${dshSignal.tone}`} href={dshSignal.href} target="_blank" rel="noreferrer"><i></i>{dshSignal.label} ↗</a>}
+            </div>
+            <p class="caveat">{dshUsage.caveat}</p>
+          </div>
+          <div class="app-stack">
+            <div class="app-back" aria-hidden="true"><Image src={overviewShot} alt="" widths={[480, 820]} sizes="(max-width: 1200px) 70vw, 520px" loading="lazy" /></div>
+            <figure class="app-window" data-reveal data-loop>
+              <div class="app-chrome" aria-hidden="true"><i></i><i></i><i></i><span>DSH WEB · 用量</span><em>开发时间线</em></div>
+              <div class="app-shot"><Image src={timelineShot} alt="DSH Usage 开发时间线界面：每半小时的费用柱与按项目排列的会话泳道" widths={[640, 960, 1165]} sizes="(max-width: 1200px) 92vw, 700px" loading="lazy" /></div>
+              <figcaption>真实运行界面，夹具数据；项目名为占位。</figcaption>
+            </figure>
+          </div>
+        </article>
+        <div class="tool-groups">
+          {toolGroups.map((group) => (
+            <div class="tool-group reveal">
+              <div class="tool-group-head"><h3>{group.label}</h3><p>{group.note}</p></div>
+              <ul class="tool-list">
+                {group.tools.map((tool, index) => {
+                  const signal = primarySignal(tool.slug);
+                  return (
+                    <li class="tool-row reveal" style={`--rd:${index * 0.06}s`}>
+                      <span class="tool-index">{toolIndex.get(tool.slug)}</span>
+                      <div class="tool-copy">
+                        <p class="eyebrow">{tool.eyebrow}</p>
+                        <h4><a href={tool.href} target="_blank" rel="noreferrer">{tool.name}</a>{isRecent(tool.slug) && <><i class="recent-dot" aria-hidden="true"></i><span class="visually-hidden">（近 30 天有更新）</span></>}</h4>
+                        <p>{tool.summary}</p>
+                        <div class="tool-meta">
+                          <div class="tags">{tool.tags.map((tag) => <span>{tag}</span>)}</div>
+                          {signal && <span class={`signal-chip ${signal.tone}`}><i></i>{signal.label}</span>}
+                        </div>
+                        {tool.caveat && <small class="caveat">{tool.caveat}</small>}
+                      </div>
+                      <span class="tool-arrow" aria-hidden="true">↗</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           ))}
         </div>
       </section>
 
+      <section class="lane section-shell" id="touch" data-lane="touch" aria-labelledby="touch-title">
+        <div class="lane-rail" data-reveal aria-hidden="true"></div>
+        <div class="section-heading reveal">
+          <div><p class="section-index"><span>03</span>可触 · TOUCH</p><h2 id="touch-title"><span class="statement-line">把代码</span><span class="statement-line"><em>烧进板子里。</em></span></h2></div>
+          <p>{hardwareOk ? `${hardwareProjects.length} 个公开硬件原型` : "公开硬件原型"}，从 ESP32 到树莓派。每个都附源码、构建记录和写明的使用限制。</p>
+        </div>
+        <div class="pcb-strip" data-reveal data-loop aria-hidden="true">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="xMidYMid slice">
+            <path class="pcb-trace" pathLength="100" style="--td:0s" d="M40 34H300L330 50H520" /><path class="pcb-trace" pathLength="100" style="--td:.08s" d="M40 60H520" /><path class="pcb-trace" pathLength="100" style="--td:.16s" d="M40 86H300L330 70H520" />
+            <path class="pcb-trace" pathLength="100" style="--td:.3s" d="M680 50H870L900 34H1150" /><path class="pcb-trace" pathLength="100" style="--td:.38s" d="M680 60H1150" /><path class="pcb-trace" pathLength="100" style="--td:.46s" d="M680 70H870L900 86H1150" />
+            <path class="pcb-pulse" pathLength="100" style="--pd:0s" d="M40 34H300L330 50H520" /><path class="pcb-pulse" pathLength="100" style="--pd:-.6s" d="M40 60H520" /><path class="pcb-pulse" pathLength="100" style="--pd:-1.2s" d="M40 86H300L330 70H520" />
+            <path class="pcb-pulse" pathLength="100" style="--pd:-1.7s" d="M680 50H870L900 34H1150" /><path class="pcb-pulse" pathLength="100" style="--pd:-2.3s" d="M680 60H1150" /><path class="pcb-pulse" pathLength="100" style="--pd:-2.9s" d="M680 70H870L900 86H1150" />
+            <circle class="pcb-pad" cx="34" cy="34" r="6" /><circle class="pcb-pad" cx="34" cy="60" r="6" /><circle class="pcb-pad" cx="34" cy="86" r="6" />
+            <circle class="pcb-via" cx="300" cy="34" r="3.5" /><circle class="pcb-via" cx="300" cy="86" r="3.5" /><circle class="pcb-via" cx="900" cy="34" r="3.5" /><circle class="pcb-via" cx="900" cy="86" r="3.5" />
+            <rect class="pcb-chip" x="186" y="52" width="40" height="16" rx="2" /><rect class="pcb-chip" x="974" y="52" width="40" height="16" rx="2" />
+            <path class="pcb-legs" d="M540 22v-8M560 22v-8M580 22v-8M600 22v-8M620 22v-8M640 22v-8M660 22v-8M540 98v8M560 98v8M580 98v8M600 98v8M620 98v8M640 98v8M660 98v8" />
+            <rect class="pcb-chip" x="520" y="22" width="160" height="76" rx="6" />
+            <text class="pcb-label" x="600" y="58">HW LAB</text><text class="pcb-sub" x="600" y="76">{hardwareOk ? `${hardwareProjects.length} PROTOTYPES` : "PROTOTYPES"}</text>
+            <circle class="pcb-led" style="--pd:-1.7s" cx="1160" cy="34" r="6" /><circle class="pcb-led" style="--pd:-2.3s" cx="1160" cy="60" r="6" /><circle class="pcb-led" style="--pd:-2.9s" cx="1160" cy="86" r="6" />
+          </svg>
+          <span class="pcb-silk">RONGYI · HARDWARE LAB · REV {studio.hardware.statusDate ? studio.hardware.statusDate.replaceAll("-", ".") : "—"}</span>
+        </div>
+        {hardwareOk ? (
+          <>
+            <div class="hw-filters" data-hw-filters role="group" aria-label="按芯片筛选硬件项目">
+              {hardwareFilters.map((filter, index) => (
+                <button type="button" data-filter={filter.key} aria-pressed={index === 0 ? "true" : "false"}>{filter.label} <b>{filter.count}</b></button>
+              ))}
+              <span class="hw-filter-status" data-hw-status aria-live="polite">显示 {hardwareProjects.length} / {hardwareProjects.length} 个项目</span>
+            </div>
+            <ul class="hw-grid">
+              {hardwareProjects.map((project, index) => (
+                <li class={`hw-item reveal${hardwareFeatured.includes(project.slug) ? " is-wide" : ""}`} data-family={project.family} style={`--rd:${(index % 5) * 0.05}s`}>
+                  <div class="hw-card">
+                    <div class="hw-top"><span class="hw-chip">{project.chip}</span><i class="hw-led" aria-hidden="true"></i></div>
+                    <h3><a href={project.repo} target="_blank" rel="noreferrer">{hardwareShortNames[project.slug] ?? project.name}</a></h3>
+                    <p>{project.summary}</p>
+                    <span class="hw-stack"><span class="visually-hidden">{familyLabel(project.family)} · </span>{stackLine(project.platform)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p class="hw-note reveal">
+              来自 <a href={studio.hardware.indexUrl} target="_blank" rel="noreferrer">Hardware Lab 索引</a>{studio.hardware.statusDate && <>（{studio.hardware.statusDate.replaceAll("-", ".")}）</>}，构建证据对应索引记录的提交{hardwareSignal && <>；索引校验：<a href={hardwareSignal.href} target="_blank" rel="noreferrer">{hardwareSignal.label}</a></>}。接线、供电和使用限制以各项目 README 为准。
+            </p>
+          </>
+        ) : (
+          <p class="hw-empty">这次构建暂时无法读取 Hardware Lab 索引，不用旧数据填充。<a href={studio.hardware.indexUrl} target="_blank" rel="noreferrer">直接查看索引 ↗</a></p>
+        )}
+      </section>
+
+      <section class="proof section-shell" id="proof" data-lane="carry" aria-labelledby="proof-title">
+        <div class="proof-copy reveal">
+          <p class="section-index"><span>04</span>GITHUB STATUS</p>
+          <h2 id="proof-title"><span class="headline-line">少一点宣称，</span><span class="headline-line">多一点<em>可检查的证据。</em></span></h2>
+          <p>版本、CI 和构建产物在每次部署时从 GitHub 与 npm 读取。按三条线分组，点击即可查看对应的发布、运行记录或下载期限。</p>
+          <a class="text-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">查看全部公开仓库 ↗</a>
+          <p class="data-note">状态更新于 {refreshedAt} CST。CI 只认指定工作流在当前默认分支 HEAD 上的运行；最新提交未验证、失败或无法确认时会直接标出。<a href={statusSourceUrl} target="_blank" rel="noopener noreferrer">查看检查方法 ↗</a></p>
+        </div>
+        <div class="signal-panel reveal">
+          <div class="signal-header"><span>GITHUB 状态快照</span><small>截至 {refreshedAt} CST</small></div>
+          {proofGroups.map((group) => (
+            <div class="signal-lane" data-lane={group.lane}>
+              <div class="signal-group"><i aria-hidden="true"></i>{laneMeta[group.lane].index} · {laneMeta[group.lane].word} · {laneMeta[group.lane].label}</div>
+              {group.items.flatMap((item) => proofRows(item)).map((row) => {
+                const isArtifact = row.kind === "artifact";
+                const status = repoStatus[row.slug];
+                return (
+                  <a class={`signal-row ${row.tone}`} href={row.href} target="_blank" rel="noopener noreferrer" data-artifact-status={isArtifact ? status?.artifact.status : undefined} data-artifact-expires-at={isArtifact ? status?.artifact.artifacts?.find((item) => !item.expired)?.expiresAt : undefined}>
+                    <i class={iconClass(row.tone)}></i><b>{row.name}</b><span data-signal-label>{row.label}</span><em>↗</em>
+                  </a>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </section>
+      <section class="lane section-shell" id="log" aria-labelledby="log-title">
+        <div class="lane-rail" data-reveal aria-hidden="true"></div>
+        <div class="section-heading reveal">
+          <div><p class="section-index"><span>05</span>RECENT UPDATES</p><h2 id="log-title">最近更新</h2></div>
+          <p>发布、npm 版本和 Hardware Lab 收录在每次部署时自动汇总，只有复盘是手写的。</p>
+        </div>
+        <ol class="timeline" data-reveal>
+          {updates.map((item, index) => (
+            <li class="tl-item reveal" data-lane={item.lane} style={`--rd:${index * 0.05}s`}>
+              <a href={item.href} target="_blank" rel="noreferrer">
+                <time datetime={isoDay(item.date)}>{formatDay(item.date)}</time>
+                <i class="tl-dot" aria-hidden="true"></i>
+                <div class="tl-body">
+                  <div class="tl-tags"><span>{item.type}</span><em>{laneMeta[item.lane].word}</em></div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </div>
+                <span class="tl-arrow" aria-hidden="true">↗</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <p class="feed-note">更新流生成于 {studioRefreshedAt} CST{degradedSources.length > 0 && <>；<b>{degradedSources.join("、")}暂时无法确认</b>，本次没有用旧数据补齐</>}。</p>
+      </section>
+
       <section class="closing section-shell reveal">
-        <p class="eyebrow">YI盘 / CURRENT PROGRESS</p>
-        <h2><span class="statement-line">想知道 Yi盘</span><span class="statement-line"><em>现在做到哪一步？</em></span></h2>
-        <p>公开仓库记录已确认的功能、已知限制和开发进度。</p>
-        <a class="button primary" href="https://github.com/rongyishuaige7/yipan-showcase" target="_blank" rel="noreferrer">查看 Yi盘进展 <span>↗</span></a>
+        <p class="eyebrow">{lanes.map((lane) => <i data-lane={lane} aria-hidden="true"></i>)} RONGYI · STUDIO</p>
+        <h2><span class="statement-line">三条线，</span><span class="statement-line"><em>进展都在 GitHub。</em></span></h2>
+        <p>产品事实、构建记录和已知限制都写在仓库里；Yi盘的反馈也走 GitHub Issues。</p>
+        <div class="closing-actions">
+          <a class="button primary" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">访问 GitHub <span>↗</span></a>
+          <a class="button secondary" href="https://github.com/rongyishuaige7/yipan-showcase/issues" target="_blank" rel="noreferrer">提交 Yi盘反馈 <span>↗</span></a>
+        </div>
       </section>
     </main>
 
     <footer>
-      <div><b>RONGYI</b><span>Yi盘</span></div>
-      <p>Yi盘、桌面工具与硬件项目。</p>
+      <div><b>RONGYI</b><span>独立开发者 · Yi盘创始人</span></div>
+      <p>{lanes.map((lane) => <span data-lane={lane}><i aria-hidden="true"></i>{laneMeta[lane].word} · {laneMeta[lane].short}</span>)}</p>
       <span>© {new Date().getFullYear()} @rongyishuaige7</span>
     </footer>
 
     <script>
       import { refreshTimeSensitiveSignals } from "../scripts/status-freshness";
+      import { initMotion } from "../scripts/motion";
       refreshTimeSensitiveSignals();
-
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const reveals = document.querySelectorAll(".reveal");
-      reveals.forEach((el, index) => {
-        if (!reduced && index < 3) el.classList.add("enter");
-      });
-      const header = document.querySelector("[data-header]");
-      const onScroll = () => header?.classList.toggle("is-scrolled", window.scrollY > 40);
-      onScroll();
-      window.addEventListener("scroll", onScroll, { passive: true });
+      initMotion();
     </script>
   </body>
 </html>
