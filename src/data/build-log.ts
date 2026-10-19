@@ -1,34 +1,20 @@
-export const buildLog = [
+// Hand-written entries only. Releases, npm versions and the Hardware Lab index are
+// collected at build time into `studio.json` and merged with these on the page.
+export type Lane = "carry" | "see" | "touch";
+
+export type ManualUpdate = {
+  date: string;
+  lane: Lane;
+  type: string;
+  title: string;
+  text: string;
+  href: string;
+};
+
+export const manualUpdates: ManualUpdate[] = [
   {
-    date: "2026.07.14",
-    type: "RELEASE",
-    title: "Problem Solution Recorder v0.2.0",
-    text: "索引保护、Markdown 转义与知识库密钥扫描完成正式发布。",
-    href: "https://github.com/rongyishuaige7/problem-solution-recorder-oss/releases/tag/v0.2.0"
-  },
-  {
-    date: "2026.07.14",
-    type: "BUILD",
-    title: "ESP32 firmware artifact",
-    text: "固定 PlatformIO 与 U8g2 版本，并在 CI 中上传固件。",
-    href: "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29339478819"
-  },
-  {
-    date: "2026.07.14",
-    type: "TEST",
-    title: "DevFlow unit tests",
-    text: "DevFlow 新增 Web 单元测试，并在 CI 中检查前端构建。",
-    href: "https://github.com/rongyishuaige7/devflow-recorder/actions/runs/29339471902"
-  },
-  {
-    date: "2026.07.14",
-    type: "TEST",
-    title: "Desktop Pet unit tests",
-    text: "桌面宠物新增 Web 单元测试，并在 CI 中检查前端构建。",
-    href: "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/29339475309"
-  },
-  {
-    date: "2026.07.14",
+    date: "2026-07-14",
+    lane: "carry",
     type: "RETRO",
     title: "从功能集合到可交付产品",
     text: "Yi盘开发复盘：如何从功能集合走到可测试、可发布的产品。",

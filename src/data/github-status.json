@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T13:22:37.034Z",
+  "generatedAt": "2026-10-19T13:26:25.938Z",
   "evidencePolicy": "current-default-branch-head",
   "source": "GitHub REST API",
   "repositories": {
@@ -11,7 +11,74 @@
       "language": null,
       "defaultBranch": "main",
       "headSha": "ccb48aac0ea599506e4d9f239c80f6464289e164",
+      "headCommittedAt": "2026-07-14T13:08:37Z",
       "pushedAt": "2026-07-14T13:08:40Z",
+      "ci": {
+        "status": "not_configured"
+      },
+      "release": {
+        "status": "none"
+      },
+      "artifact": {
+        "status": "not_configured"
+      }
+    },
+    "dsh-stats": {
+      "repo": "dsh-stats",
+      "url": "https://github.com/rongyishuaige7/dsh-stats",
+      "description": "DeepSeek Harness (DSH) 插件：项目级 Token 消耗、开发时间线与消费金额统计面板",
+      "license": "MIT",
+      "language": "JavaScript",
+      "defaultBranch": "main",
+      "headSha": "38aed2be3cf7aba4e29d645405bed665a3aaa168",
+      "headCommittedAt": "2026-10-19T12:48:25Z",
+      "pushedAt": "2026-10-19T12:49:42Z",
+      "ci": {
+        "status": "completed",
+        "conclusion": "success",
+        "workflow": "ci.yml",
+        "url": "https://github.com/rongyishuaige7/dsh-stats/actions/runs/39255100560",
+        "headSha": "38aed2be3cf7aba4e29d645405bed665a3aaa168",
+        "runAt": "2026-10-19T12:49:44Z",
+        "ageHours": 0.6
+      },
+      "release": {
+        "status": "none"
+      },
+      "artifact": {
+        "status": "not_configured"
+      }
+    },
+    "dsh-spec": {
+      "repo": "dsh-spec",
+      "url": "https://github.com/rongyishuaige7/dsh-spec",
+      "description": null,
+      "license": "MIT",
+      "language": "JavaScript",
+      "defaultBranch": "main",
+      "headSha": "85d031c9de11f228cb690a4e389256d9bb6dd2fc",
+      "headCommittedAt": "2026-08-15T13:00:31Z",
+      "pushedAt": "2026-08-15T13:01:46Z",
+      "ci": {
+        "status": "not_configured"
+      },
+      "release": {
+        "status": "none"
+      },
+      "artifact": {
+        "status": "not_configured"
+      }
+    },
+    "tech-mentor": {
+      "repo": "tech-mentor",
+      "url": "https://github.com/rongyishuaige7/tech-mentor",
+      "description": "Deep technical mentor & architectural walkthrough skill for AI-generated code in Antigravity (agy)",
+      "license": "MIT",
+      "language": "Shell",
+      "defaultBranch": "main",
+      "headSha": "b537120f236013c7866af6905e40b9959cae00e3",
+      "headCommittedAt": "2026-10-09T10:02:47Z",
+      "pushedAt": "2026-10-09T10:04:04Z",
       "ci": {
         "status": "not_configured"
       },
@@ -30,6 +97,7 @@
       "language": "Shell",
       "defaultBranch": "main",
       "headSha": "4c54b1aa9d001eb9f192b988281d5c24d322783a",
+      "headCommittedAt": "2026-07-14T14:07:43Z",
       "pushedAt": "2026-07-19T00:22:21Z",
       "ci": {
         "status": "completed",
@@ -50,6 +118,29 @@
         "status": "not_configured"
       }
     },
+    "ningque": {
+      "repo": "ningque",
+      "url": "https://github.com/rongyishuaige7/ningque",
+      "description": "宁缺：持续发布品味裁决的独立审美公报",
+      "license": null,
+      "language": "HTML",
+      "defaultBranch": "main",
+      "headSha": "a38e00c1a0cdb59e3fb732e2a069c62cdba52786",
+      "headCommittedAt": "2026-07-26T02:07:10Z",
+      "pushedAt": "2026-07-26T02:07:12Z",
+      "ci": {
+        "status": "not_configured"
+      },
+      "release": {
+        "status": "available",
+        "tag": "v1.0.0",
+        "publishedAt": "2026-07-16T15:52:36Z",
+        "url": "https://github.com/rongyishuaige7/ningque/releases/tag/v1.0.0"
+      },
+      "artifact": {
+        "status": "not_configured"
+      }
+    },
     "devflow-recorder": {
       "repo": "devflow-recorder",
       "url": "https://github.com/rongyishuaige7/devflow-recorder",
@@ -58,6 +149,7 @@
       "language": "Rust",
       "defaultBranch": "main",
       "headSha": "978f8739946e506fd1c5867c93465493a64a1e7e",
+      "headCommittedAt": "2026-07-14T14:07:47Z",
       "pushedAt": "2026-07-14T14:07:49Z",
       "ci": {
         "status": "completed",
@@ -75,30 +167,30 @@
         "status": "not_configured"
       }
     },
-    "ESP32_RPS_Game": {
-      "repo": "ESP32_RPS_Game",
-      "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game",
-      "description": "ESP32-S3 rock-paper-scissors game with OV3660 vision, OLED, audio, RGB LED, and optional MJPEG streaming.",
+    "memory-monitor": {
+      "repo": "memory-monitor",
+      "url": "https://github.com/rongyishuaige7/memory-monitor",
+      "description": "GNOME Shell extension: real-time RAM/Swap monitor with alerts, PSI pressure and top processes",
       "license": "MIT",
-      "language": "C++",
-      "defaultBranch": "main",
-      "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
-      "pushedAt": "2026-07-19T02:16:20Z",
+      "language": "JavaScript",
+      "defaultBranch": "master",
+      "headSha": "2f21751b2f1d74921f61cda1c3427efe3cef568d",
+      "headCommittedAt": "2026-07-26T17:43:27Z",
+      "pushedAt": "2026-07-26T17:43:29Z",
       "ci": {
         "status": "completed",
         "conclusion": "success",
         "workflow": "ci.yml",
-        "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29669939600",
-        "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
-        "runAt": "2026-07-19T02:16:22Z",
-        "ageHours": 2219.1
+        "url": "https://github.com/rongyishuaige7/memory-monitor/actions/runs/30213179885",
+        "headSha": "2f21751b2f1d74921f61cda1c3427efe3cef568d",
+        "runAt": "2026-07-26T17:43:30Z",
+        "ageHours": 2035.7
       },
       "release": {
         "status": "none"
       },
       "artifact": {
-        "status": "none",
-        "artifacts": []
+        "status": "not_configured"
       }
     },
     "pet-desktop-tauri": {
@@ -109,6 +201,7 @@
       "language": "TypeScript",
       "defaultBranch": "main",
       "headSha": "91f34dc9307b00eb704559de4d2a2a123b4b7496",
+      "headCommittedAt": "2026-07-14T14:07:50Z",
       "pushedAt": "2026-07-14T14:07:52Z",
       "ci": {
         "status": "completed",
@@ -124,6 +217,59 @@
       },
       "artifact": {
         "status": "not_configured"
+      }
+    },
+    "hardware-lab": {
+      "repo": "hardware-lab",
+      "url": "https://github.com/rongyishuaige7/hardware-lab",
+      "description": "Verified index of Rongyi hardware prototypes, with reproducible builds, evidence scope, and honest hardware re-test status.",
+      "license": "MIT",
+      "language": "Python",
+      "defaultBranch": "main",
+      "headSha": "5d69d6524f86cbed5a0fc4e0fdf9dbe8f0ee8533",
+      "headCommittedAt": "2026-07-19T02:46:47Z",
+      "pushedAt": "2026-07-19T02:46:49Z",
+      "ci": {
+        "status": "completed",
+        "conclusion": "success",
+        "workflow": "validate.yml",
+        "url": "https://github.com/rongyishuaige7/hardware-lab/actions/runs/29670721789",
+        "headSha": "5d69d6524f86cbed5a0fc4e0fdf9dbe8f0ee8533",
+        "runAt": "2026-07-19T02:46:51Z",
+        "ageHours": 2218.7
+      },
+      "release": {
+        "status": "none"
+      },
+      "artifact": {
+        "status": "not_configured"
+      }
+    },
+    "ESP32_RPS_Game": {
+      "repo": "ESP32_RPS_Game",
+      "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game",
+      "description": "ESP32-S3 rock-paper-scissors game with OV3660 vision, OLED, audio, RGB LED, and optional MJPEG streaming.",
+      "license": "MIT",
+      "language": "C++",
+      "defaultBranch": "main",
+      "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
+      "headCommittedAt": "2026-07-19T02:16:00Z",
+      "pushedAt": "2026-07-19T02:16:20Z",
+      "ci": {
+        "status": "completed",
+        "conclusion": "success",
+        "workflow": "ci.yml",
+        "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29669939600",
+        "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
+        "runAt": "2026-07-19T02:16:22Z",
+        "ageHours": 2219.2
+      },
+      "release": {
+        "status": "none"
+      },
+      "artifact": {
+        "status": "none",
+        "artifacts": []
       }
     }
   }

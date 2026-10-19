@@ -4,7 +4,7 @@ Rongyi 的个人主页，展示 Yi盘、开发工具、硬件项目和对应的 
 
 - 线上地址：<https://rongyishuaige7.github.io>
 - 技术栈：Astro 静态站、原生 CSS、构建时 GitHub API
-- 动态信号：每次部署从公开 GitHub API 生成 `src/data/github-status.json`
+- 动态信号：每次部署从公开 GitHub API 生成 `src/data/github-status.json`，并从 GitHub 与 npm registry 生成 `src/data/studio.json`（npm 版本与下载量、Hardware Lab 索引、自动更新流）；只采用 `/users/rongyishuaige7/repos` 列出的公开仓库
 - 状态口径：只对指定工作流、当前默认分支 HEAD 和未过期 Artifact 显示绿色证据
 
 ## 本地开发
