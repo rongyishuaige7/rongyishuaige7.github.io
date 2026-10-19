@@ -1,8 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { artifactStatusForCi, getCiTiming, isArtifactAvailable } from "./github-status-semantics.mjs";
+import { artifactStatusForCi, ciRunAgeHours, ciStatusForHead, isArtifactAvailable } from "./github-status-semantics.mjs";
 
 const owner = "rongyishuaige7";
-const staleAfterHours = 48;
 const requestTimeoutMs = 12_000;
 const retryDelaysMs = [500, 1_500];
 
@@ -77,7 +76,7 @@ async function workflowSignal(repo, workflow, defaultBranch, headSha) {
       `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(workflow)}/runs?branch=${encodeURIComponent(defaultBranch)}&event=push&per_page=20`
     );
     const candidates = runs.workflow_runs ?? [];
-    const matchingHead = candidates.find((run) => run.head_sha === headSha);
+    const { run: matchingHead } = ciStatusForHead(candidates, headSha);
 
     if (!matchingHead) {
       return {
@@ -97,15 +96,15 @@ async function workflowSignal(repo, workflow, defaultBranch, headSha) {
     }
 
     const runAt = matchingHead.run_started_at ?? matchingHead.created_at;
-    const timing = getCiTiming(runAt, staleAfterHours);
+    const ageHours = ciRunAgeHours(runAt);
     return {
-      status: timing.stale ? "stale" : matchingHead.status,
+      status: matchingHead.status,
       conclusion: matchingHead.conclusion,
       workflow,
       url: matchingHead.html_url,
       headSha: matchingHead.head_sha,
       runAt,
-      ageHours: timing.ageHours === null ? null : Math.round(timing.ageHours * 10) / 10
+      ageHours: ageHours === null ? null : Math.round(ageHours * 10) / 10
     };
   } catch (error) {
     return { status: "unknown", workflow, error: errorInfo(error) };
@@ -147,6 +146,8 @@ const results = {};
 for (const config of repositories) {
   try {
     const details = await api(`/repos/${owner}/${config.repo}`);
+    // A token with broader access must never turn a private repository into public evidence.
+    if (details.private !== false) throw new Error(`refusing non-public repository: ${config.repo}`);
     const branch = await api(`/repos/${owner}/${config.repo}/branches/${encodeURIComponent(details.default_branch)}`);
     const headSha = branch.commit.sha;
     const [release, ci] = await Promise.all([
@@ -188,7 +189,7 @@ for (const config of repositories) {
 
 const payload = {
   generatedAt,
-  staleAfterHours,
+  evidencePolicy: "current-default-branch-head",
   source: "GitHub REST API",
   repositories: results
 };

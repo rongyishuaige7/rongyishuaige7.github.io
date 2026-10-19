@@ -1,21 +1,34 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { artifactStatusForCi, getCiTiming, isArtifactAvailable } from "../scripts/github-status-semantics.mjs";
+import { artifactStatusForCi, ciRunAgeHours, ciStatusForHead, isArtifactAvailable } from "../scripts/github-status-semantics.mjs";
 
 const now = Date.parse("2026-07-15T12:00:00.000Z");
+const head = "a".repeat(40);
+const older = "b".repeat(40);
 
-test("CI evidence becomes stale only after the 48-hour boundary", () => {
-  const atBoundary = getCiTiming("2026-07-13T12:00:00.000Z", 48, now);
-  assert.equal(atBoundary.ageHours, 48);
-  assert.equal(atBoundary.stale, false);
-
-  const pastBoundary = getCiTiming("2026-07-13T11:59:59.999Z", 48, now);
-  assert.equal(pastBoundary.stale, true);
+test("a passing run for an unchanged HEAD stays valid regardless of age", () => {
+  const runs = [{ head_sha: head, status: "completed", conclusion: "success" }];
+  const result = ciStatusForHead(runs, head);
+  assert.equal(result.status, "completed");
+  assert.equal(result.run.conclusion, "success");
+  assert.equal(ciRunAgeHours("2026-04-15T12:00:00.000Z", now), 2184);
 });
 
-test("invalid CI timestamps fail closed as stale", () => {
-  assert.deepEqual(getCiTiming("not-a-date", 48, now), { ageHours: null, stale: true });
+test("a HEAD that moved past its last run is unverified", () => {
+  const runs = [{ head_sha: older, status: "completed", conclusion: "success" }];
+  assert.deepEqual(ciStatusForHead(runs, head), { status: "unverified", run: null });
+  assert.deepEqual(ciStatusForHead([], head), { status: "unverified", run: null });
+  assert.deepEqual(ciStatusForHead(undefined, head), { status: "unverified", run: null });
+});
+
+test("an in-flight run for the current HEAD reports its live status", () => {
+  const runs = [{ head_sha: head, status: "in_progress", conclusion: null }];
+  assert.equal(ciStatusForHead(runs, head).status, "in_progress");
+});
+
+test("invalid CI timestamps have no age", () => {
+  assert.equal(ciRunAgeHours("not-a-date", now), null);
 });
 
 test("Artifact with expiresAt equal to or before now is unavailable", () => {

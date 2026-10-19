@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-15T11:26:58.664Z",
-  "staleAfterHours": 48,
+  "generatedAt": "2026-10-19T13:22:37.034Z",
+  "evidencePolicy": "current-default-branch-head",
   "source": "GitHub REST API",
   "repositories": {
     "yipan-showcase": {
@@ -30,7 +30,7 @@
       "language": "Shell",
       "defaultBranch": "main",
       "headSha": "4c54b1aa9d001eb9f192b988281d5c24d322783a",
-      "pushedAt": "2026-07-14T14:13:14Z",
+      "pushedAt": "2026-07-19T00:22:21Z",
       "ci": {
         "status": "completed",
         "conclusion": "success",
@@ -38,7 +38,7 @@
         "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/actions/runs/29339468636",
         "headSha": "4c54b1aa9d001eb9f192b988281d5c24d322783a",
         "runAt": "2026-07-14T14:07:49Z",
-        "ageHours": 21.3
+        "ageHours": 2327.3
       },
       "release": {
         "status": "available",
@@ -66,7 +66,7 @@
         "url": "https://github.com/rongyishuaige7/devflow-recorder/actions/runs/29339471902",
         "headSha": "978f8739946e506fd1c5867c93465493a64a1e7e",
         "runAt": "2026-07-14T14:07:52Z",
-        "ageHours": 21.3
+        "ageHours": 2327.3
       },
       "release": {
         "status": "none"
@@ -82,33 +82,23 @@
       "license": "MIT",
       "language": "C++",
       "defaultBranch": "main",
-      "headSha": "7cc39bd4ace77febee17320fe8a2efd8ac06b205",
-      "pushedAt": "2026-07-14T14:07:55Z",
+      "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
+      "pushedAt": "2026-07-19T02:16:20Z",
       "ci": {
         "status": "completed",
         "conclusion": "success",
         "workflow": "ci.yml",
-        "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29339478819",
-        "headSha": "7cc39bd4ace77febee17320fe8a2efd8ac06b205",
-        "runAt": "2026-07-14T14:07:58Z",
-        "ageHours": 21.3
+        "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29669939600",
+        "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
+        "runAt": "2026-07-19T02:16:22Z",
+        "ageHours": 2219.1
       },
       "release": {
         "status": "none"
       },
       "artifact": {
-        "status": "available",
-        "artifacts": [
-          {
-            "id": 8313387773,
-            "name": "esp32-rps-firmware-7cc39bd4ace77febee17320fe8a2efd8ac06b205",
-            "sizeInBytes": 5984866,
-            "expired": false,
-            "createdAt": "2026-07-14T14:08:42Z",
-            "expiresAt": "2026-07-28T14:08:41Z",
-            "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29339478819#artifacts"
-          }
-        ]
+        "status": "none",
+        "artifacts": []
       }
     },
     "pet-desktop-tauri": {
@@ -127,7 +117,7 @@
         "url": "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/29339475309",
         "headSha": "91f34dc9307b00eb704559de4d2a2a123b4b7496",
         "runAt": "2026-07-14T14:07:55Z",
-        "ageHours": 21.3
+        "ageHours": 2327.3
       },
       "release": {
         "status": "none"

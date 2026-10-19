@@ -52,6 +52,10 @@ type DisplaySignal = {
 };
 
 const repoStatus = githubStatus.repositories as Record<string, RepositoryStatus>;
+const dayFormat = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" });
+function formatDay(iso: string) {
+  return dayFormat.format(new Date(iso)).replaceAll("/", ".");
+}
 const statusSourceUrl = "https://github.com/rongyishuaige7/rongyishuaige7.github.io/blob/main/scripts/fetch-github-status.mjs";
 
 function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
@@ -59,12 +63,14 @@ function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
   const href = ci.url ?? signal.url;
   if (ci.status === "not_configured") return null;
   if (ci.status === "unknown") return { kind: "ci", label: "暂时无法确认 CI 状态", href, tone: "neutral" };
-  if (ci.status === "unverified") return { kind: "ci", label: "当前版本尚未验证", href, tone: "neutral" };
-  if (ci.status === "stale") return { kind: "ci", label: "CI 记录已超过 48 小时", href, tone: "stale" };
+  if (ci.status === "unverified") return { kind: "ci", label: "最新提交尚未验证", href, tone: "neutral" };
   if (ci.status === "queued" || ci.status === "in_progress" || ci.status === "requested" || ci.status === "waiting" || ci.status === "pending") {
     return { kind: "ci", label: "当前版本正在运行 CI", href, tone: "running" };
   }
-  if (ci.status === "completed" && ci.conclusion === "success") return { kind: "ci", label: "当前版本 CI 通过", href, tone: "pass" };
+  if (ci.status === "completed" && ci.conclusion === "success") {
+    const day = ci.runAt ? ` · ${formatDay(ci.runAt)}` : "";
+    return { kind: "ci", label: `当前版本 CI 通过${day}`, href, tone: "pass" };
+  }
   if (ci.status === "completed") return { kind: "ci", label: `当前版本 CI ${ci.conclusion ?? "状态未知"}`, href, tone: "failure" };
   return { kind: "ci", label: "暂时无法确认 CI 状态", href, tone: "neutral" };
 }
@@ -271,7 +277,7 @@ const structuredData = {
             </article>
           );
         })}
-        <p class="data-note reveal">以上 GitHub 状态更新于 {refreshedAt} CST。CI 只检查指定工作流和当前默认分支；失败、过期或无法确认时会直接标出。<a href={statusSourceUrl} target="_blank" rel="noopener noreferrer">查看检查方法 ↗</a></p>
+        <p class="data-note reveal">以上 GitHub 状态更新于 {refreshedAt} CST。CI 只认指定工作流在当前默认分支 HEAD 上的运行；最新提交未验证、失败或无法确认时会直接标出。<a href={statusSourceUrl} target="_blank" rel="noopener noreferrer">查看检查方法 ↗</a></p>
       </section>
 
       <section class="proof section-shell" id="proof" aria-labelledby="proof-title" data-section="02">

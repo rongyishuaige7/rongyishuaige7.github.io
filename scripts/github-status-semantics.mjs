@@ -1,24 +1,21 @@
 /**
- * Pure time-boundary rules shared by GitHub status collection and validation.
+ * Pure evidence rules shared by GitHub status collection and validation.
  * Every helper accepts `nowMs` so tests and future callers remain deterministic.
+ *
+ * CI evidence is tied to the current default-branch HEAD, not to a time window:
+ * a passing run for an unchanged HEAD stays valid, and a HEAD that moved past
+ * its last verified run is reported as unverified by the collector.
  */
-export function getCiTiming(runAt, staleAfterHours, nowMs = Date.now()) {
+export function ciRunAgeHours(runAt, nowMs = Date.now()) {
   const runAtMs = Date.parse(runAt);
-  if (
-    !Number.isFinite(runAtMs) ||
-    !Number.isFinite(staleAfterHours) ||
-    staleAfterHours < 0 ||
-    !Number.isFinite(nowMs)
-  ) {
-    return { ageHours: null, stale: true };
-  }
+  if (!Number.isFinite(runAtMs) || !Number.isFinite(nowMs)) return null;
+  return (nowMs - runAtMs) / 3_600_000;
+}
 
-  const ageHours = (nowMs - runAtMs) / 3_600_000;
-  return {
-    ageHours,
-    // Exactly 48 hours is still inside a 48-hour validity window.
-    stale: ageHours > staleAfterHours
-  };
+export function ciStatusForHead(runs, headSha) {
+  const matchingHead = (runs ?? []).find((run) => run.head_sha === headSha);
+  if (!matchingHead) return { status: "unverified", run: null };
+  return { status: matchingHead.status, run: matchingHead };
 }
 
 export function isArtifactAvailable(artifact, nowMs = Date.now()) {
