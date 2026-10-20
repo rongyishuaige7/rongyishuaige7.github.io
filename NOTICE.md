@@ -9,5 +9,6 @@ materials are reserved unless separately stated in their authoritative public so
 This repository does not contain or license Yi盘's commercial implementation.
 
 Hardware prototype photos under `src/assets/hardware/` are resized copies of historical photos
-published in each project's own public repository. They remain under that repository's terms and are
-not additionally licensed by this site's MIT License.
+published in each project's own public repository. Tool screenshots under `src/assets/tools/` are
+copies or crops of images published in each tool's own public repository. Both remain under their
+source repository's terms and are not additionally licensed by this site's MIT License.

@@ -104,6 +104,14 @@ export const toolGroups: ToolGroup[] = [
   }
 ];
 
+// Tool thumbnails are copies of each repository's own public screenshot or share image (see README).
+// Tools missing here have no public screenshot and keep a text-only row.
+export const toolShots: Record<string, { alt: string; label: string; fit?: "contain"; position?: string }> = {
+  ningque: { alt: "宁缺第 001 号判词分享图：正文的骨头，正式承认 Source Han Sans SC 2.005R", label: "001 号判词分享图", fit: "contain" },
+  "devflow-recorder": { alt: "DevFlow Recorder 浏览器预览界面：今天的开发轨迹与活动时间线，条目标注为示例数据", label: "浏览器预览 · 示例数据", position: "0 0" },
+  "pet-desktop-tauri": { alt: "Desktop Pet 工作室浏览器预览：动作舞台上的小猫“奶茶”，使用模拟帧包", label: "浏览器预览 · 模拟帧包" }
+};
+
 // Hardware tiles come from the Hardware Lab index at build time; these only shorten titles
 // and choose the wide tiles. Repositories missing here fall back to the index name.
 // Wide tiles need a public prototype photo, so ESP32_RPS_Game (schematic only) stays a normal tile.

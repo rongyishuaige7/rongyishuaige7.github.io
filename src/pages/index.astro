@@ -8,7 +8,7 @@ import { Image } from "astro:assets";
 import timelineShot from "../assets/dsh/timeline-dark.png";
 import overviewShot from "../assets/dsh/overview-dark.png";
 import trendsShot from "../assets/dsh/trends-dark.png";
-import { dshUsage, hardwareFamilies, hardwareFeatured, hardwareHeroDeck, hardwarePhotos, hardwareShortNames, laneMeta, toolGroups, yipan } from "../data/projects";
+import { dshUsage, hardwareFamilies, hardwareFeatured, hardwareHeroDeck, hardwarePhotos, hardwareShortNames, laneMeta, toolGroups, toolShots, yipan } from "../data/projects";
 import { manualUpdates } from "../data/build-log";
 import type { Lane } from "../data/build-log";
 import githubStatus from "../data/github-status.json";
@@ -110,6 +110,13 @@ const dshSlides = [
   { key: "timeline", label: "时间线", src: timelineShot, alt: "DSH Usage 开发时间线界面：每半小时的 Token 柱与按项目排列的会话泳道" },
   { key: "trends", label: "趋势", src: trendsShot, alt: "DSH Usage 用量趋势界面：总 Token、预估费用、活跃与连续天数、活动热力图和近 7 天每日 Token" }
 ];
+// Tool screenshots are keyed by repository slug; a slug without a file keeps the text-only row.
+const toolFiles = import.meta.glob<{ default: ImageMetadata }>("../assets/tools/*.png", { eager: true });
+const toolShot = (slug: string) => {
+  const meta = toolShots[slug];
+  const file = toolFiles[`../assets/tools/${slug}.png`]?.default;
+  return meta && file ? { ...meta, src: file } : null;
+};
 
 const hardwareOk = studio.hardware.status === "ok" && studio.hardware.projects.length > 0;
 // Photo files are keyed by repository slug; a slug without a file renders the placeholder.
@@ -356,8 +363,9 @@ const lanes: Lane[] = ["carry", "see", "touch"];
               <ul class="tool-list">
                 {group.tools.map((tool, index) => {
                   const signal = primarySignal(tool.slug);
+                  const shot = toolShot(tool.slug);
                   return (
-                    <li class="tool-row reveal" style={`--rd:${index * 0.06}s`}>
+                    <li class={`tool-row reveal${shot ? " has-shot" : ""}`} style={`--rd:${index * 0.06}s`}>
                       <div class="tool-copy">
                         <h4><a href={tool.href} target="_blank" rel="noreferrer">{tool.name}</a>{isRecent(tool.slug) && <><i class="recent-dot" aria-hidden="true"></i><span class="visually-hidden">（近 30 天有更新）</span></>}</h4>
                         <p>{tool.summary}</p>
@@ -367,6 +375,12 @@ const lanes: Lane[] = ["carry", "see", "touch"];
                         </div>
                         {tool.caveat && <small class="caveat">{tool.caveat}</small>}
                       </div>
+                      {shot && (
+                        <figure class="tool-shot">
+                          <span class="tool-shot-frame"><Image src={shot.src} alt={shot.alt} widths={[160, 320, 640]} sizes="(max-width: 760px) calc(100vw - 62px), 160px" loading="lazy" class={shot.fit === "contain" ? "is-contain" : undefined} style={shot.position ? `object-position:${shot.position}` : undefined} /></span>
+                          <figcaption>{shot.label}</figcaption>
+                        </figure>
+                      )}
                       <span class="tool-arrow" aria-hidden="true">↗</span>
                     </li>
                   );
