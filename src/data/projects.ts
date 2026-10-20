@@ -3,7 +3,6 @@ import type { Lane } from "./build-log";
 export type Project = {
   slug: string;
   name: string;
-  eyebrow: string;
   summary: string;
   status?: string;
   tags: string[];
@@ -13,7 +12,6 @@ export type Project = {
 
 export type ToolGroup = {
   label: string;
-  note: string;
   tools: Project[];
 };
 
@@ -26,10 +24,9 @@ export const laneMeta: Record<Lane, { index: string; short: string; word: string
 export const yipan: Project = {
   slug: "yipan-showcase",
   name: "Yi盘",
-  eyebrow: "NOW BUILDING · 装在 U 盘里的随身 AI 工作台",
-  summary: "长期资料、任务记录和主要产出保存在盘内；需要智能处理时主要调用云端模型。",
-  status: "受控内测 · 正在完成上市前验证",
-  tags: ["AI Agents", "Local-first", "Knowledge Governance", "Portable"],
+  summary: "资料、任务记录和产出保存在盘内，智能处理主要调用云端模型。",
+  status: "受控内测",
+  tags: ["U 盘存储", "云端模型"],
   href: "https://github.com/rongyishuaige7/yipan-showcase",
   caveat: "Linux 测试最完整；Windows 与 macOS 仍在真机测试。"
 };
@@ -37,9 +34,8 @@ export const yipan: Project = {
 export const dshUsage: Project = {
   slug: "dsh-stats",
   name: "DSH Usage",
-  eyebrow: "DEEPSEEK HARNESS 插件 · NPM",
-  summary: "按项目整理 DSH 会话：Token、开发时长、模型费用和账户余额一屏看清。无法确认价格时明确标记，不硬猜；密钥只在本机使用。",
-  tags: ["TypeScript", "DSH Plugin", "Local-first", "CSV / JSON"],
+  summary: "按项目统计 DSH 会话的 Token、时长、费用和余额。未知价格会标出，密钥仅在本机使用。",
+  tags: ["DSH Plugin", "CSV / JSON"],
   href: "https://github.com/rongyishuaige7/dsh-stats",
   caveat: "费用按公开 API 计价规则推算，最终以 Provider 账单为准。"
 };
@@ -47,37 +43,32 @@ export const dshUsage: Project = {
 export const toolGroups: ToolGroup[] = [
   {
     label: "AGENT 工作流",
-    note: "让 Agent 的工作有规格、有解释、有记录",
     tools: [
       {
         slug: "dsh-spec",
         name: "dsh-spec",
-        eyebrow: "DSH PLUGIN · THREE SKILLS",
-        summary: "规格驱动开发的 DSH 插件，含写规格、实现、验收三个技能：先写需求、设计和任务，再按规格实现与验收。",
+        summary: "DSH 插件：编写需求与设计、按规格实现、验收。",
         tags: ["DSH Plugin", "Spec", "npm"],
         href: "https://github.com/rongyishuaige7/dsh-spec"
       },
       {
         slug: "tech-mentor",
         name: "Tech Mentor",
-        eyebrow: "AGENT SKILL · CODE WALKTHROUGH",
-        summary: "把 AI 写好的代码讲透：架构意图、流转图、源码解剖和暗坑考查四阶带读。",
+        summary: "讲解代码架构、数据流和关键实现，并检查理解程度。",
         tags: ["Agent Skill", "Antigravity", "Shell"],
         href: "https://github.com/rongyishuaige7/tech-mentor"
       },
       {
         slug: "problem-solution-recorder-oss",
         name: "Problem Solution Recorder",
-        eyebrow: "AGENT SKILL · MARKDOWN MEMORY",
-        summary: "把排障过程保存成可检索的 Markdown，同时生成人读索引和 AI 索引。",
+        summary: "将排障过程保存为 Markdown，供人和 Agent 检索。",
         tags: ["Agent Skill", "Markdown", "Shell"],
         href: "https://github.com/rongyishuaige7/problem-solution-recorder-oss"
       },
       {
         slug: "ningque",
         name: "宁缺",
-        eyebrow: "AI-LED EXPERIMENT · 审美公报",
-        summary: "一份持续发布品味裁决的独立审美公报。产品由 Codex 独立构思、设计与开发；我负责审查、授权和发布渠道。",
+        summary: "由 Codex 构思、设计与开发的审美公报；我负责审查、授权和发布。",
         tags: ["Codex", "GitHub Pages", "Editorial"],
         href: "https://github.com/rongyishuaige7/ningque"
       }
@@ -85,13 +76,11 @@ export const toolGroups: ToolGroup[] = [
   },
   {
     label: "桌面工具",
-    note: "把机器上看不见的状态摆出来",
     tools: [
       {
         slug: "devflow-recorder",
         name: "DevFlow Recorder",
-        eyebrow: "LOCAL ACTIVITY · GNOME WAYLAND",
-        summary: "记录窗口焦点变化，整理成可回看的工作时间线；数据保存在本机。",
+        summary: "记录窗口焦点，生成本地工作时间线。",
         tags: ["Rust", "Tauri", "SQLite"],
         href: "https://github.com/rongyishuaige7/devflow-recorder",
         caveat: "GNOME Wayland 是当前主路径。"
@@ -99,16 +88,14 @@ export const toolGroups: ToolGroup[] = [
       {
         slug: "memory-monitor",
         name: "Memory Monitor",
-        eyebrow: "GNOME SHELL · PSI",
-        summary: "状态栏颜色跟随 PSI 卡顿时间而不是占用率：机器真的变慢时才提醒，并列出 Swap 大户。",
+        summary: "按 PSI 卡顿时间提示内存压力，并列出 Swap 占用较高的进程。",
         tags: ["GNOME Shell", "JavaScript", "Linux"],
         href: "https://github.com/rongyishuaige7/memory-monitor"
       },
       {
         slug: "pet-desktop-tauri",
         name: "Desktop Pet",
-        eyebrow: "PLAYFUL EXPERIMENT · NATIVE WINDOW",
-        summary: "Linux 桌面宠物原型：React 负责设置界面，Rust + GTK 负责透明置顶窗口。",
+        summary: "Linux 桌面宠物原型，使用 Tauri、Rust 与 GTK。",
         tags: ["Tauri", "Rust", "GTK"],
         href: "https://github.com/rongyishuaige7/pet-desktop-tauri",
         caveat: "原生宠物窗口只支持 Linux。"
