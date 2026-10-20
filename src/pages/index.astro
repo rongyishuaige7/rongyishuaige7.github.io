@@ -5,8 +5,9 @@ import "../styles/global.css";
 import "../styles/studio.css";
 import "../styles/motion.css";
 import { Image } from "astro:assets";
-import timelineShot from "../assets/dsh/timeline-panel.png";
-import overviewShot from "../assets/dsh/overview-panel.png";
+import timelineShot from "../assets/dsh/timeline-dark.png";
+import overviewShot from "../assets/dsh/overview-dark.png";
+import trendsShot from "../assets/dsh/trends-dark.png";
 import { dshUsage, hardwareFamilies, hardwareFeatured, hardwareShortNames, laneMeta, toolGroups, yipan } from "../data/projects";
 import { manualUpdates } from "../data/build-log";
 import type { Lane } from "../data/build-log";
@@ -114,6 +115,7 @@ const hardwareFilters = [
   ...hardwareFamilies.map((family) => ({ key: family.key, label: family.label, count: hardwareProjects.filter((project) => project.family === family.key).length }))
 ].filter((filter) => filter.count > 0);
 const familyLabel = (family: string) => hardwareFamilies.find((item) => item.key === family)?.label ?? "其他";
+const hardwareEvidenceTone = (status?: string) => (status === "verified" ? "pass" : status === "failure" ? "failure" : "neutral");
 const stackLine = (platform: string) => platform.split(" · ").slice(1, 4).join(" · ");
 
 const updates = [
@@ -230,7 +232,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
           </a>
           <a class="project-entry entry-see" href="#see" data-lane="see">
             <div class="entry-copy"><h2>DSH Usage <span aria-hidden="true">↓</span></h2><p>会话、Token 与模型费用</p></div>
-            <div class="entry-shot"><Image src={overviewShot} alt="" widths={[480, 820]} sizes="(max-width: 760px) 92vw, 42vw" loading="eager" fetchpriority="high" /></div>
+            <div class="entry-shot"><Image src={trendsShot} alt="" widths={[480, 820, 1180]} sizes="(max-width: 760px) 92vw, 42vw" loading="eager" fetchpriority="high" /></div>
             <span class="entry-caption">运行截图 · 夹具数据</span>
           </a>
           <a class="project-entry entry-touch" href="#touch" data-lane="touch">
@@ -310,7 +312,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
             <div class="app-back" aria-hidden="true"><Image src={overviewShot} alt="" widths={[480, 820]} sizes="(max-width: 1200px) 70vw, 520px" loading="lazy" /></div>
             <figure class="app-window" data-reveal data-loop>
               <div class="app-chrome" aria-hidden="true"><i></i><i></i><i></i><span>DSH WEB · 用量</span><em>开发时间线</em></div>
-              <div class="app-shot"><Image src={timelineShot} alt="DSH Usage 开发时间线界面：每半小时的费用柱与按项目排列的会话泳道" widths={[640, 960, 1165]} sizes="(max-width: 1200px) 92vw, 700px" loading="lazy" /></div>
+              <div class="app-shot"><Image src={timelineShot} alt="DSH Usage 开发时间线界面：每半小时的 Token 柱与按项目排列的会话泳道" widths={[640, 960, 1400]} sizes="(max-width: 1200px) 92vw, 700px" loading="lazy" /></div>
               <figcaption>真实运行界面，夹具数据；项目名为占位。</figcaption>
             </figure>
           </div>
@@ -379,7 +381,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
                     <div class="hw-top"><span class="hw-chip">{project.chip}</span><i class="hw-led" aria-hidden="true"></i></div>
                     <h3><a href={project.repo} target="_blank" rel="noreferrer">{hardwareShortNames[project.slug] ?? project.name}</a></h3>
                     <p>{project.summary}</p>
-                    <a class={`hw-evidence ${project.evidence?.status === "verified" ? "pass" : "neutral"}`} href={project.evidence?.runUrl ?? project.repo} target="_blank" rel="noreferrer" aria-label={`${project.name}：${hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown}`}><i aria-hidden="true"></i>{hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown} ↗</a>
+                    <a class={`hw-evidence ${hardwareEvidenceTone(project.evidence?.status)}`} href={project.evidence?.runUrl ?? project.repo} target="_blank" rel="noreferrer" aria-label={`${project.name}：${hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown}`}><i aria-hidden="true"></i>{hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown} ↗</a>
                     <span class="hw-stack" title={project.platform}><span class="visually-hidden">{familyLabel(project.family)} · </span>{stackLine(project.platform)}</span>
                   </div>
                 </li>
