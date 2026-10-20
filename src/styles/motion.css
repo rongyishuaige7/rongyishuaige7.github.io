@@ -2,10 +2,7 @@
 .header-sentinel{position:absolute;top:40px;left:0;width:1px;height:1px;pointer-events:none}
 .reveal{transition-duration:.55s}
 .entry-carry .drive-face::after{animation:shine 3.6s ease-in-out infinite;animation-play-state:paused}
-.entry-touch .board-pulse{animation:trace 2.8s ease-in infinite;animation-play-state:paused}
-.entry-touch .board-led{animation:led 2.8s linear infinite;animation-play-state:paused}
-.entry-touch .board-led-glow{animation:ledGlow 2.8s ease-out infinite;animation-play-state:paused}
-.project-entry:is(:hover,:focus-visible) .drive-face::after,.project-entry:is(:hover,:focus-visible) :is(.board-pulse,.board-led,.board-led-glow){animation-play-state:running}
+.project-entry:is(:hover,:focus-visible) .drive-face::after{animation-play-state:running}
 [data-loop="paused"],[data-loop="paused"] *,[data-loop="paused"]::before,[data-loop="paused"]::after,[data-loop="paused"] *::before,[data-loop="paused"] *::after{animation-play-state:paused!important}
 
 /* The screenshot remains readable before decode, during motion, and without JS. */
@@ -28,6 +25,5 @@
   .scroll-progress{display:none}
   .hero-enter{animation:none!important;opacity:1;transform:none}
   .project-entry,.entry-copy h2>span,.entry-shot img{transition:none;transform:none!important}
-  .entry-carry .drive-face::after,.entry-touch :is(.board-pulse,.board-led,.board-led-glow),.app-shot::after{animation:none!important}
-  .board-pulse,.board-led-glow{opacity:0}
+  .entry-carry .drive-face::after,.app-shot::after{animation:none!important}
 }

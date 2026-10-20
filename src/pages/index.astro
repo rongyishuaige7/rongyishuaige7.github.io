@@ -8,7 +8,7 @@ import { Image } from "astro:assets";
 import timelineShot from "../assets/dsh/timeline-dark.png";
 import overviewShot from "../assets/dsh/overview-dark.png";
 import trendsShot from "../assets/dsh/trends-dark.png";
-import { dshUsage, hardwareFamilies, hardwareFeatured, hardwareShortNames, laneMeta, toolGroups, yipan } from "../data/projects";
+import { dshUsage, hardwareFamilies, hardwareFeatured, hardwareHeroDeck, hardwarePhotos, hardwareShortNames, laneMeta, toolGroups, yipan } from "../data/projects";
 import { manualUpdates } from "../data/build-log";
 import type { Lane } from "../data/build-log";
 import githubStatus from "../data/github-status.json";
@@ -106,7 +106,22 @@ const dshDownloads = typeof dshNpm.downloadsLastMonth === "number" ? dshNpm.down
 const dshSignal = primarySignal(dshUsage.slug);
 
 const hardwareOk = studio.hardware.status === "ok" && studio.hardware.projects.length > 0;
-const hardwareProjects = studio.hardware.projects;
+// Photo files are keyed by repository slug; a slug without a file renders the placeholder.
+const photoFiles = import.meta.glob<{ default: ImageMetadata }>("../assets/hardware/*.jpg", { eager: true });
+const hardwarePhoto = (slug: string) => {
+  const meta = hardwarePhotos[slug];
+  const file = photoFiles[`../assets/hardware/${slug}.jpg`]?.default;
+  return meta && file ? { ...meta, src: file } : null;
+};
+const photoDate = (date: string | null) => (date ? date.replaceAll("-", ".") : "未注明日期");
+// Featured wide tiles first, then photographed projects, then projects without a public photo;
+// index order is kept inside each group.
+const hardwareRank = (slug: string) => (hardwareFeatured.includes(slug) ? 0 : hardwarePhoto(slug) ? 1 : 2);
+const hardwareProjects = studio.hardware.projects
+  .map((project, index) => ({ project, index }))
+  .sort((a, b) => hardwareRank(a.project.slug) - hardwareRank(b.project.slug) || a.index - b.index)
+  .map(({ project }) => project);
+const heroDeck = hardwareHeroDeck.map(hardwarePhoto).filter((photo) => photo !== null);
 const hardwareSignal = primarySignal("hardware-lab");
 const verifiedHardware = hardwareProjects.filter((project) => project.evidence?.status === "verified").length;
 const hardwareEvidenceLabel: Record<string, string> = { verified: "当前提交构建通过", failure: "当前提交构建未通过", running: "当前提交构建中", unverified: "当前提交未核验", unknown: "构建证据暂不可确认" };
@@ -238,21 +253,11 @@ const lanes: Lane[] = ["carry", "see", "touch"];
           <a class="project-entry entry-touch" href="#touch" data-lane="touch">
             <div class="entry-copy"><h2>Hardware Lab <span aria-hidden="true">↓</span></h2><p>{hardwareOk ? `${hardwareProjects.length} 个硬件原型` : "硬件原型"}</p></div>
             <div class="entry-visual" aria-hidden="true">
-              <svg class="mini-board" viewBox="0 0 180 104" role="presentation">
-                <defs><filter id="led-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" /></filter></defs>
-                <rect class="board-edge" x="1" y="1" width="178" height="102" rx="8" />
-                <path class="board-pins" d="M34 30v-6M42 30v-6M50 30v-6M58 30v-6M66 30v-6M34 74v6M42 74v6M50 74v6M58 74v6M66 74v6" />
-                <rect class="board-chip" x="26" y="30" width="48" height="44" rx="4" />
-                <text class="board-chip-label" x="50" y="55">MCU</text>
-                <path class="board-trace" d="M74 40H104L118 26H146" /><path class="board-trace" d="M74 52H146" /><path class="board-trace" d="M74 64H104L118 78H146" />
-                <path class="board-pulse p1" pathLength="100" d="M74 40H104L118 26H146" /><path class="board-pulse p2" pathLength="100" d="M74 52H146" /><path class="board-pulse p3" pathLength="100" d="M74 64H104L118 78H146" />
-                <circle class="board-via" cx="104" cy="40" r="2.5" /><circle class="board-via" cx="104" cy="64" r="2.5" />
-                <circle class="board-led-glow l1" filter="url(#led-blur)" cx="154" cy="26" r="10" /><circle class="board-led-glow l2" filter="url(#led-blur)" cx="154" cy="52" r="10" /><circle class="board-led-glow l3" filter="url(#led-blur)" cx="154" cy="78" r="10" />
-                <circle class="board-led l1" cx="154" cy="26" r="5" /><circle class="board-led l2" cx="154" cy="52" r="5" /><circle class="board-led l3" cx="154" cy="78" r="5" />
-              </svg>
-              <div class="board-tags"><span>ESP32</span><span>STM32</span><span>RPi</span></div>
+              <div class="photo-deck">
+                {heroDeck.map((photo) => <Image src={photo.src} alt="" widths={[160, 320]} sizes="(max-width: 760px) 70px, 160px" loading="eager" style={photo.position ? `object-position:${photo.position}` : undefined} />)}
+              </div>
             </div>
-            <span class="entry-caption">电路示意</span>
+            <span class="entry-caption">历史原型照片</span>
           </a>
         </div>
       </section>
@@ -375,17 +380,31 @@ const lanes: Lane[] = ["carry", "see", "touch"];
               <span class="hw-filter-status" data-hw-status aria-live="polite">显示 {hardwareProjects.length} / {hardwareProjects.length} 个项目</span>
             </div>
             <ul class="hw-grid">
-              {hardwareProjects.map((project, index) => (
-                <li class={`hw-item reveal${hardwareFeatured.includes(project.slug) ? " is-wide" : ""}`} data-family={project.family} style={`--rd:${(index % 5) * 0.05}s`}>
-                  <div class="hw-card">
-                    <div class="hw-top"><span class="hw-chip">{project.chip}</span><i class="hw-led" aria-hidden="true"></i></div>
-                    <h3><a href={project.repo} target="_blank" rel="noreferrer">{hardwareShortNames[project.slug] ?? project.name}</a></h3>
-                    <p>{project.summary}</p>
-                    <a class={`hw-evidence ${hardwareEvidenceTone(project.evidence?.status)}`} href={project.evidence?.runUrl ?? project.repo} target="_blank" rel="noreferrer" aria-label={`${project.name}：${hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown}`}><i aria-hidden="true"></i>{hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown} ↗</a>
-                    <span class="hw-stack" title={project.platform}><span class="visually-hidden">{familyLabel(project.family)} · </span>{stackLine(project.platform)}</span>
+              {hardwareProjects.map((project, index) => {
+                const photo = hardwarePhoto(project.slug);
+                const wide = hardwareFeatured.includes(project.slug);
+                return (
+                <li class={`hw-item reveal${wide ? " is-wide" : ""}`} data-family={project.family} style={`--rd:${(index % 5) * 0.05}s`}>
+                  <div class={`hw-card${photo ? " has-photo" : ""}`}>
+                    <div class="hw-media">
+                      {photo ? (
+                        <Image src={photo.src} alt="" widths={[208, 320, 560, 1120]} sizes={wide ? "(max-width: 540px) 104px, 560px" : "(max-width: 540px) 104px, 280px"} loading="lazy" style={photo.position ? `object-position:${photo.position}` : undefined} />
+                      ) : (
+                        <span class="hw-media-empty" aria-hidden="true"></span>
+                      )}
+                      <span class="hw-media-tag">{photo ? <><span>历史照片</span><span>{photoDate(photo.date)}</span></> : "未公开实物照片"}</span>
+                    </div>
+                    <div class="hw-body">
+                      <div class="hw-top"><span class="hw-chip">{project.chip}</span><i class="hw-led" aria-hidden="true"></i></div>
+                      <h3><a href={project.repo} target="_blank" rel="noreferrer">{hardwareShortNames[project.slug] ?? project.name}</a></h3>
+                      <p>{project.summary}</p>
+                      <a class={`hw-evidence ${hardwareEvidenceTone(project.evidence?.status)}`} href={project.evidence?.runUrl ?? project.repo} target="_blank" rel="noreferrer" aria-label={`${project.name}：${hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown}`}><i aria-hidden="true"></i>{hardwareEvidenceLabel[project.evidence?.status] ?? hardwareEvidenceLabel.unknown} ↗</a>
+                      <span class="hw-stack" title={project.platform}><span class="visually-hidden">{familyLabel(project.family)} · </span>{stackLine(project.platform)}</span>
+                    </div>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <p class="hw-note reveal">
               <a href={studio.hardware.indexUrl} target="_blank" rel="noreferrer">项目索引 ↗</a> · 当前提交核验 {verifiedHardware} / {hardwareProjects.length}{hardwareSignal && <> · <a href={hardwareSignal.href} target="_blank" rel="noreferrer">{hardwareSignal.label}</a></>}。接线与供电要求见各项目 README。

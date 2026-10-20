@@ -106,7 +106,35 @@ export const toolGroups: ToolGroup[] = [
 
 // Hardware tiles come from the Hardware Lab index at build time; these only shorten titles
 // and choose the wide tiles. Repositories missing here fall back to the index name.
-export const hardwareFeatured = ["ESP32_RPS_Game", "esp32-s3-multimodal-smart-pot", "adaptive-traffic-signal-system"];
+// Wide tiles need a public prototype photo, so ESP32_RPS_Game (schematic only) stays a normal tile.
+export const hardwareFeatured = ["esp32-s3-multimodal-smart-pot", "adaptive-traffic-signal-system", "esp32-s3-health-voice-terminal"];
+
+// Prototype photos copied from each repository's public assets/photos, resized to 1200px with
+// metadata removed. Dates follow the Hardware Lab media_scope; null means the index gives none.
+// Missing slugs have no public prototype photo and render an explicit placeholder.
+export const hardwarePhotos: Record<string, { date: string | null; position?: string }> = {
+  "esp32-s3-multimodal-smart-pot": { date: null },
+  "stm32-multisensor-data-acquisition": { date: "2026-05-02" },
+  "lora-warehouse-tracking-system": { date: "2026-04-08" },
+  "adaptive-traffic-signal-system": { date: "2026-05-14" },
+  "esp32-s3-health-voice-terminal": { date: "2026-04-26" },
+  "raspberry-pi-rfid-room-card-system": { date: "2026-04-08" },
+  "stm32-touch-gesture-control-system": { date: "2026-04-02" },
+  "esp32-smart-alarm-clock": { date: "2026-04-06" },
+  "esp32-smart-pillbox": { date: "2026-04-08" },
+  "esp32-weather-clock": { date: "2026-03-28", position: "50% 60%" },
+  "esp32-baby-monitor": { date: "2026-04-08" },
+  "esp32-beehive-monitor": { date: null },
+  "esp32-smart-makeup-cabinet": { date: "2026-04-08" },
+  "esp32-c3-smart-band": { date: "2026-04-29" },
+  "arduino-multisensor-audio-demo": { date: null },
+  "esp32-s3-smart-agriculture-monitoring-system": { date: "2026-03-24", position: "50% 55%" },
+  "stm32f103-wardrobe-environment-monitoring-ventilation-system": { date: "2026-05-25" },
+  "raspberry-pi-home-environment-activity-monitoring-demo": { date: "2026-03-17" }
+};
+
+// Three photos with different boards and colors for the hero entry card.
+export const hardwareHeroDeck = ["esp32-weather-clock", "adaptive-traffic-signal-system", "esp32-c3-smart-band"];
 
 export const hardwareShortNames: Record<string, string> = {
   ESP32_RPS_Game: "视觉猜拳游戏",
