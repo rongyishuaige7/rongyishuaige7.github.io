@@ -23,7 +23,8 @@ npm run dev
 ## 内容范围
 
 - Yi盘当前处于受控内测，正在完成上市前验证；CI 不代表三个系统都已完成真机测试。
-- Yi盘真实截图将在获得真实产品素材后补充；当前页面使用明确标注的功能示意图。首屏工作室图同样是示意图，不代表真实数据。
+- Yi盘真实截图将在获得真实产品素材后补充；当前页面使用明确标注的功能示意图。首屏工作室图同样是示意图，不代表真实数据。Yi盘章节的结构示意按 `yipan-showcase` README 与个人主页流程图绘制：盘内资料与任务、工作台、产出与任务记录在盘内闭环，云端模型只按需推理。
+- 动效：首屏入口进入视口时各播放一次悬停预览；DSH 截图每 6 秒轮换，悬停截图或键盘聚焦标签时暂停，手动选择后停止；页头按钮可暂停全站动效（记在 `localStorage` 的 `rongyi-motion`）。离屏、后台标签页和减少动态效果时不运行循环。
 - DSH Usage 截图取自 dsh-stats 仓库的真实运行界面（深色主题、showcase 夹具数据，项目名为占位），存放在 `src/assets/dsh/`。`*-dark.png` 由 dsh-stats `85608a0` 的浏览器夹具以 1440px、2x 截取，只去掉面板外框并裁到相同高度。
 - 硬件磁贴来自 Hardware Lab 的 `projects.yml`，只保留公开仓库；构建证据以索引记录的提交为准。
 - 硬件照片取自各项目公开仓库 `assets/photos/` 中的历史原型照片，日期以 Hardware Lab `media_scope` 为准，未注明的标“未注明日期”。`src/assets/hardware/<slug>.jpg` 只做了缩放（长边 1200px）、JPEG 重压和去 EXIF，不改画面；构建时再生成 WebP。没有公开实物照片的项目（`ESP32_RPS_Game`、`esp32-s3-smart-safety-monitor`、`esp32-smart-light-controller`）显示“未公开实物照片”占位。`raspberry-pi-weather-station` 的历史界面截图标题栏仍可见局域网地址和用户名，暂不使用，需先在源仓库处理。

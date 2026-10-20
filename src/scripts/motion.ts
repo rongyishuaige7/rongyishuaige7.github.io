@@ -8,7 +8,8 @@ export function initMotion() {
   const counters = new Map<HTMLElement, number>();
   const tiles = new Map<HTMLElement, Animation>();
   let disposed = false;
-  const reduced = () => preference.matches;
+  // Reduced motion and the page-wide pause both mean: show final states, run nothing on its own.
+  const still = () => preference.matches || root.classList.contains("motion-paused");
   const listen = { signal: events.signal };
   const format = new Intl.NumberFormat("zh-CN");
   const revealTargets = [...document.querySelectorAll<HTMLElement>(".reveal, [data-reveal]")];
@@ -28,7 +29,7 @@ export function initMotion() {
     const target = Number(el.dataset.count);
     if (!Number.isFinite(target) || el.classList.contains("is-counted")) return;
     el.classList.add("is-counted");
-    if (reduced() || document.hidden) return;
+    if (still() || document.hidden) return;
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / 720);
@@ -47,7 +48,7 @@ export function initMotion() {
     finishCounters();
   };
 
-  if (reduced() || !("IntersectionObserver" in window)) revealAll();
+  if (still() || !("IntersectionObserver" in window)) revealAll();
   else {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -65,7 +66,7 @@ export function initMotion() {
   const loops = [...document.querySelectorAll<HTMLElement>("[data-loop]")];
   const visibleLoops = new Set<HTMLElement>();
   const syncLoops = () => loops.forEach((el) => {
-    el.dataset.loop = !document.hidden && !reduced() && visibleLoops.has(el) ? "running" : "paused";
+    el.dataset.loop = !document.hidden && !still() && visibleLoops.has(el) ? "running" : "paused";
   });
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver((entries) => {
@@ -81,31 +82,79 @@ export function initMotion() {
   }
   syncLoops();
 
-  // The product image is never hidden behind a scan. Decode it before a single,
-  // decorative pass; returning to the section does not replay that pass.
-  const shot = document.querySelector<HTMLElement>(".app-shot");
-  const image = shot?.querySelector<HTMLImageElement>("img");
-  let shotVisible = false;
-  let shotDecoded = false;
-  let shotFinished = reduced();
-  const scan = () => {
-    if (disposed || shotFinished || !shotVisible || !shotDecoded || reduced() || document.hidden) return;
-    shotFinished = true;
-    shot?.classList.add("is-scanning");
+  // Touch screens never hover, so each hero entry shows its hover preview once,
+  // in sequence, when the entries first come into view. Desktop hover replays it.
+  const entries = [...document.querySelectorAll<HTMLElement>(".project-entry")];
+  const previewTimers: number[] = [];
+  let previewed = false;
+  const stopPreview = () => {
+    previewTimers.splice(0).forEach((timer) => clearTimeout(timer));
+    entries.forEach((entry) => entry.classList.remove("is-preview"));
   };
-  if (shot && image) {
-    const decode = () => image.decode().then(() => {
-      shotDecoded = image.naturalWidth > 0;
-      scan();
-    }).catch(() => { /* A failed image never triggers a scan. */ });
-    if (image.complete) void decode();
-    else image.addEventListener("load", decode, { once: true, ...listen });
-    shot.addEventListener("animationend", () => shot.classList.remove("is-scanning"), listen);
-    if ("IntersectionObserver" in window) {
-      const observer = new IntersectionObserver(([entry]) => { shotVisible = entry.isIntersecting; scan(); }, { threshold: 0.3 });
-      observer.observe(shot);
-      cleanups.push(() => observer.disconnect());
-    } else { shotVisible = true; scan(); }
+  const preview = () => {
+    if (previewed || disposed || still() || document.hidden) return;
+    previewed = true;
+    entries.forEach((entry, index) => {
+      const start = 700 + index * 260;
+      previewTimers.push(window.setTimeout(() => entry.classList.add("is-preview"), start));
+      previewTimers.push(window.setTimeout(() => entry.classList.remove("is-preview"), start + 1400));
+    });
+  };
+  const map = document.querySelector<HTMLElement>(".project-map");
+  let mapVisible = false;
+  if (map && "IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(([entry]) => {
+      mapVisible = entry.isIntersecting;
+      if (mapVisible) preview();
+      if (previewed) observer.disconnect();
+    }, { threshold: 0.6 });
+    observer.observe(map);
+    cleanups.push(() => observer.disconnect());
+  }
+
+  // DSH screenshots rotate only while visible and moving is allowed. Hover and focus hold
+  // the timer; choosing a tab or pressing pause stops rotation until the visitor resumes it.
+  const shots = document.querySelector<HTMLElement>("[data-shots]");
+  const shotButtons = [...(shots?.querySelectorAll<HTMLButtonElement>("button[data-shot]") ?? [])];
+  const slides = [...(shots?.querySelectorAll<HTMLElement>("[data-slide]") ?? [])];
+  const rotateButton = shots?.querySelector<HTMLButtonElement>("[data-shot-rotate]");
+  let rotationStopped = false;
+  const showShot = (key: string) => {
+    shotButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.shot === key)));
+    slides.forEach((slide) => {
+      if (slide.dataset.slide === key) slide.removeAttribute("aria-hidden");
+      else slide.setAttribute("aria-hidden", "true");
+    });
+  };
+  const syncRotation = () => {
+    if (!shots) return;
+    const rotating = !rotationStopped && !still();
+    shots.classList.toggle("is-rotating", rotating);
+    if (rotateButton) {
+      rotateButton.hidden = still();
+      rotateButton.setAttribute("aria-pressed", String(rotationStopped));
+      const label = rotationStopped ? "继续截图轮换" : "暂停截图轮换";
+      rotateButton.title = label;
+      rotateButton.querySelector(".visually-hidden")!.textContent = label;
+    }
+  };
+  if (shots && shotButtons.length > 1) {
+    // The active tab's underline animation is the timer; [data-loop] pauses it offscreen.
+    shots.addEventListener("animationend", (event) => {
+      if (event.animationName !== "shotTimer" || !shots.classList.contains("is-rotating")) return;
+      const index = shotButtons.findIndex((button) => button.getAttribute("aria-pressed") === "true");
+      showShot(shotButtons[(index + 1) % shotButtons.length].dataset.shot!);
+    }, listen);
+    shotButtons.forEach((button) => button.addEventListener("click", () => {
+      rotationStopped = true;
+      showShot(button.dataset.shot!);
+      syncRotation();
+    }, listen));
+    rotateButton?.addEventListener("click", () => {
+      rotationStopped = !rotationStopped;
+      syncRotation();
+    }, listen);
+    syncRotation();
   }
 
   // A one-pixel observer band replaces per-scroll-frame geometry calculations.
@@ -171,7 +220,7 @@ export function initMotion() {
     shown.forEach((item) => item.classList.add("is-in"));
     const status = bar.querySelector<HTMLElement>("[data-hw-status]");
     if (status) status.textContent = `显示 ${shown.length} / ${items.length} 个项目`;
-    if (reduced() || document.hidden || !("animate" in Element.prototype)) return;
+    if (still() || document.hidden || !("animate" in Element.prototype)) return;
     const after = new Map(shown.map((item) => [item, item.getBoundingClientRect()]));
     shown.forEach((item, index) => {
       const old = before.get(item);
@@ -186,19 +235,44 @@ export function initMotion() {
     });
   }, listen);
 
+  // Settling to still: final values, no in-flight motion. Shared by reduced motion and the page pause.
+  const settle = () => {
+    revealAll();
+    cancelTiles();
+    stopPreview();
+  };
+  const toggle = document.querySelector<HTMLButtonElement>("[data-motion-toggle]");
+  const syncToggle = () => {
+    const paused = root.classList.contains("motion-paused");
+    toggle?.setAttribute("aria-pressed", String(paused));
+    const label = paused ? "恢复页面动效" : "暂停页面动效";
+    if (toggle) {
+      toggle.title = label;
+      toggle.querySelector(".visually-hidden")!.textContent = label;
+    }
+  };
+  toggle?.addEventListener("click", () => {
+    const paused = root.classList.toggle("motion-paused");
+    try {
+      if (paused) localStorage.setItem("rongyi-motion", "paused");
+      else localStorage.removeItem("rongyi-motion");
+    } catch { /* The choice still applies to this page view. */ }
+    if (paused) settle();
+    syncToggle();
+    syncLoops();
+    syncRotation();
+  }, listen);
+  syncToggle();
+
   document.addEventListener("visibilitychange", () => {
     syncLoops();
-    if (document.hidden) { finishCounters(); cancelTiles(); }
-    else scan();
+    if (document.hidden) { finishCounters(); cancelTiles(); stopPreview(); }
+    else if (mapVisible) preview();
   }, listen);
   preference.addEventListener("change", () => {
-    if (reduced()) {
-      revealAll();
-      cancelTiles();
-      shotFinished = true;
-      shot?.classList.remove("is-scanning");
-    }
+    if (still()) settle();
     syncLoops();
+    syncRotation();
   }, listen);
   const dispose = () => {
     if (disposed) return;
@@ -207,8 +281,9 @@ export function initMotion() {
     cleanups.forEach((cleanup) => cleanup());
     revealAll();
     cancelTiles();
+    stopPreview();
     loops.forEach((el) => { el.dataset.loop = "paused"; });
-    shot?.classList.remove("is-scanning");
+    shots?.classList.remove("is-rotating");
   };
   window.addEventListener("pagehide", (event) => { if (!event.persisted) dispose(); }, listen);
   root.classList.add("motion-ready");

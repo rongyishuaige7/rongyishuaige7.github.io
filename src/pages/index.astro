@@ -104,6 +104,11 @@ const studio = studioData as unknown as StudioData;
 const dshNpm = studio.npm["@rongyi7/dsh-stats"] ?? {};
 const dshDownloads = typeof dshNpm.downloadsLastMonth === "number" ? dshNpm.downloadsLastMonth : null;
 const dshSignal = primarySignal(dshUsage.slug);
+const dshSlides = [
+  { key: "overview", label: "总览", src: overviewShot, alt: "DSH Usage 项目总览界面：当日预估费用、Token、会话数与 LLM 时长，下方按项目列出 Token、缓存命中与费用" },
+  { key: "timeline", label: "时间线", src: timelineShot, alt: "DSH Usage 开发时间线界面：每半小时的 Token 柱与按项目排列的会话泳道" },
+  { key: "trends", label: "趋势", src: trendsShot, alt: "DSH Usage 用量趋势界面：总 Token、预估费用、活跃与连续天数、活动热力图和近 7 天每日 Token" }
+];
 
 const hardwareOk = studio.hardware.status === "ok" && studio.hardware.projects.length > 0;
 // Photo files are keyed by repository slug; a slug without a file renders the placeholder.
@@ -209,6 +214,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <script is:inline>
       // Hide reveal targets only when scripts run, and show everything again if motion never starts.
       document.documentElement.classList.add("js");
+      try { if (localStorage.getItem("rongyi-motion") === "paused") document.documentElement.classList.add("motion-paused"); } catch (error) { /* Storage may be blocked. */ }
       setTimeout(function () {
         if (!document.documentElement.classList.contains("motion-ready")) document.documentElement.classList.remove("js");
       }, 4000);
@@ -228,7 +234,10 @@ const lanes: Lane[] = ["carry", "see", "touch"];
         {lanes.map((lane) => <a href={laneMeta[lane].href} data-lane={lane}><i aria-hidden="true"></i>{laneMeta[lane].short}</a>)}
         <a href="#log"><i aria-hidden="true"></i>更新</a>
       </nav>
-      <a class="header-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a>
+      <div class="header-actions">
+        <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false" title="暂停页面动效"><span class="visually-hidden">暂停页面动效</span><svg viewBox="0 0 16 16" aria-hidden="true"><path class="icon-pause" d="M5 3.5v9M11 3.5v9" /><path class="icon-play" d="M5.5 3.5v9l7-4.5z" /></svg></button>
+        <a class="header-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a>
+      </div>
     </header>
     <nav class="mobile-nav" aria-label="移动端章节导航" data-lane-nav>
       {lanes.map((lane) => <a href={laneMeta[lane].href} data-lane={lane}><i aria-hidden="true"></i>{laneMeta[lane].short}</a>)}
@@ -237,7 +246,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <main id="main">
       <section class="hero" id="top" aria-labelledby="hero-title">
         <h1 id="hero-title" class="hero-enter">Rongyi</h1>
-        <div class="project-map hero-enter" style="--d:.1s" data-loop role="group" aria-label="项目入口">
+        <div class="project-map hero-enter" style="--d:.1s" role="group" aria-label="项目入口">
           <a class="project-entry entry-carry" href="#carry" data-lane="carry">
             <div class="entry-copy"><h2>Yi盘 <span aria-hidden="true">↓</span></h2><p>U 盘里的 AI 工作台</p><small>受控内测</small></div>
             <div class="entry-visual" aria-hidden="true">
@@ -276,18 +285,24 @@ const lanes: Lane[] = ["carry", "see", "touch"];
             </div>
             {yipan.caveat && <p class="caveat">当前限制 · {yipan.caveat}</p>}
           </div>
-          <figure class="yipan-blueprint" data-loop aria-labelledby="yipan-blueprint-caption">
-            <figcaption id="yipan-blueprint-caption" class="visually-hidden">Yi盘功能示意图，非产品截图。</figcaption>
-            <div class="blueprint-label">功能示意 · 非产品截图</div>
-            <div class="drive-body">
-              <div class="drive-port"><i></i><i></i><i></i></div>
-              <div class="drive-face">
-                <b class="drive-brand"><span class="brand-latin">YI</span><span class="brand-cjk">盘</span></b><small>PORTABLE AGENT WORKSPACE</small>
-                <div class="drive-lines"><i></i><i></i><i></i></div>
+          <figure class="yipan-flow" data-loop>
+            <figcaption>
+              <span class="flow-label">结构示意 · 非产品截图</span>
+              <span class="visually-hidden">盘内资料与任务供 Yi盘工作台检索；需要智能处理时，工作台按需请求云端模型并取回结果；产出与任务记录留在盘内，经记录与沉淀后成为下一次继续工作的资料。云端模型负责推理，长期资料不离开 U 盘。</span>
+            </figcaption>
+            <div class="flow" aria-hidden="true">
+              <div class="flow-drive">
+                <span class="flow-drive-tag">U 盘内</span>
+                <span class="flow-rail"><b>记录 · 沉淀</b></span>
+                <div class="flow-node n1"><b>盘内资料与任务</b><small>Inbox 确认后写入长期知识</small></div>
+                <div class="flow-step s1"><i></i><span>检索 / 继续</span></div>
+                <div class="flow-node n2"><b>Yi盘工作台</b><small>受管 Agent 处理当前任务</small></div>
+                <div class="flow-step s2"><i></i><span>生成 / 记录</span></div>
+                <div class="flow-node n3"><b>产出与任务记录</b><small>留在盘内，随盘带走</small></div>
               </div>
+              <div class="flow-link"><span class="out"><i></i>按需请求</span><span class="back"><i></i>返回结果</span></div>
+              <div class="flow-cloud"><b>云端模型</b><small>按需推理</small></div>
             </div>
-            <div class="capability-row"><span>INBOX</span><span>VAULT</span><span>AGENTS</span><span>BYOK</span></div>
-            <div class="proof-note"><i></i> 盘内资料 · 用户管理 · 云端模型</div>
           </figure>
         </article>
       </section>
@@ -314,15 +329,26 @@ const lanes: Lane[] = ["carry", "see", "touch"];
             <p class="caveat">{dshUsage.caveat}</p>
           </div>
           <div class="app-stack">
-            <div class="app-back" aria-hidden="true"><Image src={overviewShot} alt="" widths={[480, 820]} sizes="(max-width: 1200px) 70vw, 520px" loading="lazy" /></div>
-            <figure class="app-window" data-reveal data-loop>
-              <div class="app-chrome" aria-hidden="true"><i></i><i></i><i></i><span>DSH WEB · 用量</span><em>开发时间线</em></div>
-              <div class="app-shot"><Image src={timelineShot} alt="DSH Usage 开发时间线界面：每半小时的 Token 柱与按项目排列的会话泳道" widths={[640, 960, 1400]} sizes="(max-width: 1200px) 92vw, 700px" loading="lazy" /></div>
+            <figure class="app-window" data-reveal data-loop data-shots aria-label="DSH Usage 运行截图">
+              <div class="app-chrome">
+                <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><span aria-hidden="true">DSH WEB · 用量</span>
+                <div class="shot-tabs" role="group" aria-label="切换截图">
+                  {dshSlides.map((slide, index) => <button type="button" data-shot={slide.key} aria-pressed={index === 0 ? "true" : "false"}>{slide.label}</button>)}
+                </div>
+                <button class="shot-rotate" type="button" data-shot-rotate aria-pressed="false" title="暂停截图轮换"><span class="visually-hidden">暂停截图轮换</span><svg viewBox="0 0 16 16" aria-hidden="true"><path class="icon-pause" d="M5 3.5v9M11 3.5v9" /><path class="icon-play" d="M5.5 3.5v9l7-4.5z" /></svg></button>
+              </div>
+              <div class="app-shot">
+                {dshSlides.map((slide, index) => (
+                  <div class="shot-slide" data-slide={slide.key} aria-hidden={index === 0 ? undefined : "true"}>
+                    <Image src={slide.src} alt={slide.alt} widths={[640, 960, 1400]} sizes="(max-width: 1200px) 92vw, 700px" loading="lazy" />
+                  </div>
+                ))}
+              </div>
               <figcaption>真实运行界面，夹具数据；项目名为占位。</figcaption>
             </figure>
           </div>
         </article>
-        <div class="tool-groups">
+        <div class="tool-groups" data-loop>
           {toolGroups.map((group) => (
             <div class="tool-group reveal">
               <div class="tool-group-head"><h3>{group.label}</h3></div>
