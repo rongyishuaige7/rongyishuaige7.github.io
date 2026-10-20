@@ -143,5 +143,5 @@
 
 未处理：
 
-- 旧浅色截图 `overview-panel.png`、`timeline-panel.png` 已不再引用，仍保留。
+- 旧浅色截图 `overview-panel.png`、`timeline-panel.png` 已不再引用，经用户同意已删除（历史版本仍在 Git 中）。
 - 气象站源仓库截图中的局域网地址和用户名需要在该仓库处理，本轮未修改。
