@@ -9,6 +9,8 @@ Rongyi 的个人主页，按三条线展示公开项目：随身（Yi盘）、�
 
 ## 本地开发
 
+需要 Node.js 22.22.0 或更高版本。
+
 ```bash
 npm ci
 npm run status

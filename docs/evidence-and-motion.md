@@ -50,3 +50,17 @@
 首轮线上 Lighthouse 为性能 91、无障碍/最佳实践/SEO 各 100，LCP 2.0s、TBT 0ms、CLS 0。未计分检查仍发现 Logo 的可见字母 R 不在 aria-label 中；已补成与可见文字一致的前缀。同时预加载现有自托管 Latin 字体，提前启动 HTML → CSS → 字体链条中的最后一个请求。没有加入字体或更改品牌。
 
 再次线上检查性能为 95，LCP 1.9s、Speed Index 4.7s、TBT 0ms、CLS 0。Lighthouse 内置的名称规则仍不接受冗余 aria-label，而独立 axe 检查通过。为消除差异，Logo 改由可见文字直接提供原生链接名称，去掉覆盖名称和装饰文字的 aria-hidden，并保留“回到首页”提示；不再维护一份独立的品牌名称字符串。
+
+## 依赖安全修复（2026-10-20）
+
+目标：消除上一阶段锁文件中的 11 个受影响包。将 Astro 从 7.0.9 升到 7.4.1，并在现有依赖约束内更新仍受影响的传递依赖；不增加直接依赖或 overrides。参考 [Astro 7.4.1 发布说明](https://github.com/withastro/astro/releases/tag/astro%407.4.1)，同步将项目最低 Node 要求设为 22.22.0。CI 继续使用 Node 22。
+
+影响面：构建工具、图像处理和锁文件。风险为编译、图像产物或原生动效的兼容性变化；通过干净 npm ci、完整 npm audit、现有测试、Astro check/build，以及生产构建的桌面/移动端、筛选、截图解码和 reduced-motion 回归验证。推送后检查当前提交的 Pages 工作流与线上行为。
+
+本地验证结果：
+
+- Astro 7.4.1、Sharp 0.35.5；升级后遗留的 fast-uri 通过原有兼容约束从 3.1.3 更新为 3.1.9。其余直接依赖版本不变。
+- 干净 `npm ci` 和包含开发依赖的 `npm audit` 均通过，受影响包从 11 个降至 0 个；生成 CycloneDX 1.5 清单作为本机验收证据。锁文件下载源均为 npm registry，并保留 integrity 校验值。
+- 19 项测试通过，Astro check 为 0 错误、0 警告；重新采集 GitHub/npm 数据后通过语义校验，静态构建与 6 张 WebP 图像输出正常。
+- 生产预览在 1440/390/320px 无溢出、脚本错误或资源加载失败；桌面五列网格、22/15/3/3/1 筛选、快速连续点击、键盘、章节高亮、截图解码后单次扫描、动态 reduced-motion、后台及离屏暂停、无 JS 和缺少 IO/WAAPI 的降级均通过。
+- axe-core 4.14.0 无违规。Lighthouse 13.5.0 本地移动预览性能、无障碍、最佳实践和 SEO 各 100，LCP 1.4s、TBT 0ms、CLS 0；此为单次本地实验室结果，不代表公网测速。
