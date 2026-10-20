@@ -48,3 +48,5 @@
 ## 线上复查收尾
 
 首轮线上 Lighthouse 为性能 91、无障碍/最佳实践/SEO 各 100，LCP 2.0s、TBT 0ms、CLS 0。未计分检查仍发现 Logo 的可见字母 R 不在 aria-label 中；已补成与可见文字一致的前缀。同时预加载现有自托管 Latin 字体，提前启动 HTML → CSS → 字体链条中的最后一个请求。没有加入字体或更改品牌。
+
+再次线上检查性能为 95，LCP 1.9s、Speed Index 4.7s、TBT 0ms、CLS 0。Lighthouse 内置的名称规则仍不接受冗余 aria-label，而独立 axe 检查通过。为消除差异，Logo 改由可见文字直接提供原生链接名称，去掉覆盖名称和装饰文字的 aria-hidden，并保留“回到首页”提示；不再维护一份独立的品牌名称字符串。

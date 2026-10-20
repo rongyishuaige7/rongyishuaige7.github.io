@@ -207,8 +207,8 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
 
     <header class="site-header" data-header>
-      <a class="wordmark" href="#top" aria-label="R RONGYI / STUDIO 首页">
-        <span aria-hidden="true">R</span><b>RONGYI</b><small>/ STUDIO</small>
+      <a class="wordmark" href="#top" title="回到首页">
+        <span>R</span><b>RONGYI</b><small>/ STUDIO</small>
       </a>
       <nav aria-label="主导航" data-lane-nav>
         {lanes.map((lane) => <a href={laneMeta[lane].href} data-lane={lane}><i aria-hidden="true"></i>{laneMeta[lane].short}</a>)}
