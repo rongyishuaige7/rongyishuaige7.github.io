@@ -1,0 +1,61 @@
+/* One shared 8.4s story: portable context → visible work → hardware feedback.
+   Existing inner card hover transforms remain separate from outer FLIP motion. */
+.header-sentinel{position:absolute;top:40px;left:0;width:1px;height:1px;pointer-events:none}
+.reveal{transition-duration:.55s}
+.hero-enter,.hero h1 .headline-line{animation-duration:.6s}
+.studio-map{--signal-cycle:8.4s}
+.studio-map::after{display:none}
+.core-orbit{animation:none}
+.core-orbit::after{opacity:.55}
+.yipan-core{animation:contextSignal var(--signal-cycle) ease-in-out infinite}
+.zone-see{animation:toolsSignal var(--signal-cycle) ease-in-out infinite}
+.zone-touch{animation:hardwareSignal var(--signal-cycle) ease-in-out infinite}
+.usage-bars i{animation:usageSignal var(--signal-cycle) ease-in-out infinite;animation-delay:calc(var(--i) * .035s)}
+.studio-map .session-list i,.studio-map .online i{animation:none}
+.studio-map .session-list li:first-child em::after{content:none;animation:none}
+.map-route .packet{left:0;opacity:0;animation:none}
+.map-route .packet.late{display:none}
+@supports(width:1cqw){
+  .map-route{container-type:inline-size}
+  .route-see .packet{animation:contextToTools var(--signal-cycle) cubic-bezier(.4,0,.2,1) infinite}
+  .route-touch .packet{animation:toolsToHardware var(--signal-cycle) cubic-bezier(.4,0,.2,1) infinite}
+}
+.board-pulse{animation:hardwareTrace var(--signal-cycle) ease-out infinite}
+.board-led{animation:hardwareLed var(--signal-cycle) ease-out infinite}
+.board-led-glow{animation:hardwareGlow var(--signal-cycle) ease-out infinite}
+.p2,.l2{animation-delay:.16s}.p3,.l3{animation-delay:.32s}
+
+/* The screenshot remains readable before decode, during motion, and without JS. */
+.app-shot img{transition:none}
+.app-shot::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(90deg,transparent 46%,rgba(110,168,255,.12) 49.5%,rgba(110,168,255,.5) 50%,rgba(110,168,255,.12) 50.5%,transparent 54%);transform:translateX(-55%)}
+.app-shot.is-scanning::after{animation:screenshotScan 1.1s cubic-bezier(.2,.65,.3,1) both}
+.hw-grid[data-filtered] .hw-item{transition:none}
+.hw-grid{overflow-anchor:none}
+
+/* Unsupported browsers keep a quiet header without a faux progress indicator. */
+.scroll-progress{display:none}
+@supports(animation-timeline:scroll()){
+  .scroll-progress{display:block;animation:readingProgress linear both;animation-duration:auto;animation-timeline:scroll(root block)}
+}
+
+@keyframes contextSignal{0%,6%,22%,100%{transform:scale(1)}12%{transform:scale(1.045)}}
+@keyframes toolsSignal{0%,18%,48%,100%{opacity:.9;transform:none}28%,36%{opacity:1;transform:translateY(-3px)}}
+@keyframes hardwareSignal{0%,56%,90%,100%{opacity:.9;transform:none}68%,78%{opacity:1;transform:translateY(-3px)}}
+@keyframes usageSignal{0%,20%,52%,100%{transform:scaleY(.78)}30%,38%{transform:scaleY(1)}}
+@keyframes contextToTools{0%,12%{opacity:0;transform:translateX(calc(100cqw - 7px))}14%{opacity:1}28%{opacity:1;transform:translateX(0)}30%,100%{opacity:0;transform:translateX(0)}}
+@keyframes toolsToHardware{0%,48%{opacity:0;transform:translateX(0)}50%{opacity:1}64%{opacity:1;transform:translateX(calc(100cqw - 7px))}66%,100%{opacity:0;transform:translateX(calc(100cqw - 7px))}}
+@keyframes hardwareTrace{0%,62%{stroke-dashoffset:14;opacity:0}64%{opacity:1}76%{stroke-dashoffset:-100;opacity:1}80%,100%{stroke-dashoffset:-100;opacity:0}}
+@keyframes hardwareLed{0%,72%,90%,100%{fill:rgba(var(--touch-rgb),.22)}76%,80%{fill:var(--touch-2)}}
+@keyframes hardwareGlow{0%,72%,90%,100%{opacity:0}76%{opacity:.4}}
+@keyframes screenshotScan{0%{opacity:0;transform:translateX(-55%)}12%,78%{opacity:1}100%{opacity:0;transform:translateX(55%)}}
+@keyframes readingProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-delay:0s!important}
+  .scroll-progress{display:none}
+  .hero-enter,.hero h1 .headline-line{animation:none!important;opacity:1;transform:none}
+  .lane-word::after{animation:none!important;transform:scaleX(1)}
+  .yipan-core,.zone-see,.zone-touch,.usage-bars i,.board-pulse,.board-led,.board-led-glow,.app-shot::after{animation:none!important}
+  .zone-see,.zone-touch{opacity:1;transform:none}
+  .usage-bars i{transform:none}
+  .board-pulse,.board-led-glow{opacity:0}
+}

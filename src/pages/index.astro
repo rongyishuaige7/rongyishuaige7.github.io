@@ -2,6 +2,7 @@
 import "@fontsource-variable/geist/index.css";
 import "../styles/global.css";
 import "../styles/studio.css";
+import "../styles/motion.css";
 import { Image } from "astro:assets";
 import timelineShot from "../assets/dsh/timeline-panel.png";
 import overviewShot from "../assets/dsh/overview-panel.png";
@@ -219,7 +220,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     </nav>
     <main id="main">
       <section class="hero" id="top">
-        <div class="hero-copy">
+        <div class="hero-copy" data-loop>
           <p class="eyebrow hero-enter" style="--d:0s"><span class="pulse"></span> RONGYI · 独立开发者 · YI盘创始人</p>
           <h1>
             <span class="headline-line" data-lane="carry" style="--d:.05s;--ud:.75s"><span class="lane-word">随身</span>的上下文，</span>
