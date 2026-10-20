@@ -40,14 +40,15 @@ function ciSignal(signal: RepositoryStatus): DisplaySignal | null {
   const ci = signal.ci;
   const href = ci.url ?? signal.url;
   const scope = ci.scope ?? "CI";
+  const joined = /^[A-Za-z0-9]/.test(scope) ? ` ${scope}` : scope;
   if (ci.status === "not_configured") return null;
   if (ci.status === "unknown") return { kind: "ci", label: `${scope}状态暂时无法确认`, href, tone: "neutral" };
-  if (ci.status === "unverified") return { kind: "ci", label: `当前提交${scope}尚未核验`, href, tone: "neutral" };
-  if (["queued", "in_progress", "requested", "waiting", "pending"].includes(ci.status)) return { kind: "ci", label: `当前提交正在运行${scope}`, href, tone: "running" };
+  if (ci.status === "unverified") return { kind: "ci", label: `当前提交${joined}尚未核验`, href, tone: "neutral" };
+  if (["queued", "in_progress", "requested", "waiting", "pending"].includes(ci.status)) return { kind: "ci", label: `当前提交正在运行${joined}`, href, tone: "running" };
   if (ci.status === "completed" && ci.conclusion === "success") {
-    return { kind: "ci", label: `当前提交${scope}通过${ci.runAt ? ` · ${formatDay(ci.runAt)}` : ""}`, href, tone: "pass" };
+    return { kind: "ci", label: `当前提交${joined}通过${ci.runAt ? ` · ${formatDay(ci.runAt)}` : ""}`, href, tone: "pass" };
   }
-  if (ci.status === "completed") return { kind: "ci", label: `当前提交${scope} ${ci.conclusion ?? "状态未知"}`, href, tone: "failure" };
+  if (ci.status === "completed") return { kind: "ci", label: `当前提交${joined} ${ci.conclusion ?? "状态未知"}`, href, tone: "failure" };
   return { kind: "ci", label: `${scope}状态暂时无法确认`, href, tone: "neutral" };
 }
 function releaseSignal(signal: RepositoryStatus): DisplaySignal | null {
@@ -405,7 +406,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
               ))}
               <span class="hw-filter-status" data-hw-status aria-live="polite">显示 {hardwareProjects.length} / {hardwareProjects.length} 个项目</span>
             </div>
-            <ul class="hw-grid">
+            <ul class="hw-grid" id="hw-grid">
               {hardwareProjects.map((project, index) => {
                 const photo = hardwarePhoto(project.slug);
                 const wide = hardwareFeatured.includes(project.slug);
@@ -432,6 +433,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
                 );
               })}
             </ul>
+            <button class="hw-more" type="button" data-hw-more aria-controls="hw-grid" hidden>展开全部</button>
             <p class="hw-note reveal">
               <a href={studio.hardware.indexUrl} target="_blank" rel="noreferrer">项目索引 ↗</a> · 当前提交核验 {verifiedHardware} / {hardwareProjects.length}{hardwareSignal && <> · <a href={hardwareSignal.href} target="_blank" rel="noreferrer">{hardwareSignal.label}</a></>}。接线与供电要求见各项目 README。
             </p>

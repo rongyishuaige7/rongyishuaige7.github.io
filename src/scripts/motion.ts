@@ -206,23 +206,54 @@ export function initMotion() {
   const bar = document.querySelector<HTMLElement>("[data-hw-filters]");
   const grid = document.querySelector<HTMLElement>(".hw-grid");
   const items = [...document.querySelectorAll<HTMLElement>(".hw-item[data-family]")];
+  // Phones show the first nine tiles of the current filter; one button reveals the rest.
+  // Without scripts, or once expanded, every tile stays in the list.
+  const phone = window.matchMedia("(max-width: 760px)");
+  const more = document.querySelector<HTMLButtonElement>("[data-hw-more]");
+  let expanded = false;
+  const fold = () => {
+    const limit = phone.matches && !expanded ? 9 : Infinity;
+    const shown = items.filter((item) => !item.hidden);
+    shown.forEach((item, index) => item.classList.toggle("is-folded", index >= limit));
+    items.filter((item) => item.hidden).forEach((item) => item.classList.remove("is-folded"));
+    const rest = Math.max(0, shown.length - limit);
+    if (more) {
+      more.hidden = rest === 0;
+      more.textContent = `展开其余 ${rest} 个项目`;
+    }
+  };
+  more?.addEventListener("click", () => {
+    const first = items.find((item) => item.classList.contains("is-folded"));
+    expanded = true;
+    fold();
+    items.forEach((item) => { if (!item.hidden) item.classList.add("is-in"); });
+    // The button disappears, so keyboard focus moves to the first revealed project.
+    first?.querySelector<HTMLAnchorElement>("h3 a")?.focus();
+  }, listen);
+  phone.addEventListener("change", fold, listen);
+  fold();
+  // Folding happens after first paint; keep a deep link below the list on target.
+  const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+  if (target && grid && grid.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING) target.scrollIntoView({ behavior: "instant" });
   bar?.addEventListener("click", (event) => {
     const button = (event.target as Element).closest<HTMLButtonElement>("button[data-filter]");
     if (!button || !bar.contains(button) || button.getAttribute("aria-pressed") === "true") return;
     // Capture visual positions before cancelling any in-flight transitions.
-    const before = new Map(items.filter((item) => !item.hidden).map((item) => [item, { rect: item.getBoundingClientRect(), opacity: getComputedStyle(item).opacity }]));
+    const before = new Map(items.filter((item) => !item.hidden && !item.classList.contains("is-folded")).map((item) => [item, { rect: item.getBoundingClientRect(), opacity: getComputedStyle(item).opacity }]));
     cancelTiles();
     const filter = button.dataset.filter;
     const shown = items.filter((item) => filter === "all" || item.dataset.family === filter);
     bar.querySelectorAll("button[data-filter]").forEach((el) => el.setAttribute("aria-pressed", String(el === button)));
     grid?.setAttribute("data-filtered", "");
     items.forEach((item) => { item.hidden = !shown.includes(item); });
+    fold();
     shown.forEach((item) => item.classList.add("is-in"));
     const status = bar.querySelector<HTMLElement>("[data-hw-status]");
     if (status) status.textContent = `显示 ${shown.length} / ${items.length} 个项目`;
     if (still() || document.hidden || !("animate" in Element.prototype)) return;
-    const after = new Map(shown.map((item) => [item, item.getBoundingClientRect()]));
-    shown.forEach((item, index) => {
+    const visible = shown.filter((item) => !item.classList.contains("is-folded"));
+    const after = new Map(visible.map((item) => [item, item.getBoundingClientRect()]));
+    visible.forEach((item, index) => {
       const old = before.get(item);
       const rect = after.get(item)!;
       const from = old ? `translate(${old.rect.left - rect.left}px,${old.rect.top - rect.top}px)` : "translateY(10px)";
