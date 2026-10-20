@@ -37,6 +37,7 @@ for (const [repo, signal] of Object.entries(status.repositories ?? {})) {
   if (signal.artifact.status === "unknown") nonGreenSignals.push(`${repo}: artifact unknown`);
 
   if (signal.ci.status === "completed") {
+    if (!signal.ci.scope || !signal.ci.workflow?.startsWith(".github/workflows/") || !["push", "workflow_dispatch", "schedule"].includes(signal.ci.event)) failures.push(`${repo}: CI scope/workflow/event is not verified`);
     if (!signal.defaultBranch || !/^[0-9a-f]{40}$/.test(signal.headSha ?? "")) failures.push(`${repo}: verified CI is missing default-branch HEAD`);
     if (!/^[0-9a-f]{40}$/.test(signal.ci.headSha ?? "")) failures.push(`${repo}: verified CI is missing run HEAD`);
     if (signal.ci.headSha !== signal.headSha) failures.push(`${repo}: CI does not verify current HEAD`);

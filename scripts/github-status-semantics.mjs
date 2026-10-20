@@ -12,8 +12,14 @@ export function ciRunAgeHours(runAt, nowMs = Date.now()) {
   return (nowMs - runAtMs) / 3_600_000;
 }
 
-export function ciStatusForHead(runs, headSha) {
-  const matchingHead = (runs ?? []).find((run) => run.head_sha === headSha);
+export function ciStatusForHead(runs, headSha, expected) {
+  const candidates = (runs ?? []).filter((run) => run.head_sha === headSha && (!expected || (
+    run.head_branch === expected.branch
+    && run.path?.split("@", 1)[0] === expected.workflow
+    && ["push", "workflow_dispatch", "schedule"].includes(run.event)
+  )));
+  const startedAt = (run) => Date.parse(run.run_started_at ?? run.created_at) || 0;
+  const matchingHead = candidates.sort((a, b) => startedAt(b) - startedAt(a) || (b.run_attempt ?? 1) - (a.run_attempt ?? 1) || (b.id ?? 0) - (a.id ?? 0))[0];
   if (!matchingHead) return { status: "unverified", run: null };
   return { status: matchingHead.status, run: matchingHead };
 }

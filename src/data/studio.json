@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T14:26:43.573Z",
+  "generatedAt": "2026-10-20T05:37:07.742Z",
   "source": "GitHub REST API + npm registry",
   "sources": {
     "publicRepos": {
@@ -8,11 +8,16 @@
     },
     "npm": {
       "status": "ok",
-      "failed": []
+      "failed": [],
+      "downloadsFailed": []
     },
     "hardware": {
       "status": "ok",
       "count": 22
+    },
+    "hardwareEvidence": {
+      "status": "ok",
+      "verified": 22
     },
     "releases": {
       "status": "ok",
@@ -25,6 +30,7 @@
       "publishedAt": "2026-10-15T10:01:10.869Z",
       "versionCount": 94,
       "versionsLast30Days": 3,
+      "downloadsStatus": "ok",
       "downloadsLastMonth": 1031,
       "downloadsWindow": {
         "start": "2026-09-19",
@@ -37,6 +43,7 @@
       "publishedAt": "2026-08-15T12:56:44.728Z",
       "versionCount": 1,
       "versionsLast30Days": 0,
+      "downloadsStatus": "ok",
       "downloadsLastMonth": 56,
       "downloadsWindow": {
         "start": "2026-09-19",
@@ -48,7 +55,7 @@
   "hardware": {
     "status": "ok",
     "indexUrl": "https://github.com/rongyishuaige7/hardware-lab",
-    "statusDate": "2026-07-19",
+    "statusDate": "2026-10-20",
     "listed": 22,
     "projects": [
       {
@@ -59,7 +66,16 @@
         "family": "esp32",
         "chip": "ESP32-S3",
         "summary": "基于摄像头手势识别的剪刀石头布硬件游戏，包含 OLED、音频、RGB 反馈与可选 MJPEG 推流。",
-        "mediaScope": "公开一份已移除 PDF 元数据的历史原理图导出；未公开实物照片或演示视频。"
+        "mediaScope": "公开一份已移除 PDF 元数据的历史原理图导出；未公开实物照片或演示视频。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
+          "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/ci.yml",
+          "runUrl": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29669939600",
+          "runAt": "2026-07-19T02:16:22Z"
+        }
       },
       {
         "slug": "esp32-s3-multimodal-smart-pot",
@@ -69,7 +85,16 @@
         "family": "esp32",
         "chip": "ESP32-S3",
         "summary": "多模态桌面智能花盆原型，覆盖环境感知、双泵灌溉、本地彩屏、局域网控制、语音与手势交互。",
-        "mediaScope": "公开两张去除 EXIF/GPS 的历史实物照片，以及原理图 PDF、EasyEDA PCB JSON、BOM 和 Gerber/钻孔文件；没有演示视频，App 源码未找回。"
+        "mediaScope": "公开两张去除 EXIF/GPS 的历史实物照片，以及原理图 PDF、EasyEDA PCB JSON、BOM 和 Gerber/钻孔文件；没有演示视频，App 源码未找回。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "bf0cbe5b75a9a3568b0e1aec9cc7ce97bc196beb",
+          "headSha": "bf0cbe5b75a9a3568b0e1aec9cc7ce97bc196beb",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/firmware.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-s3-multimodal-smart-pot/actions/runs/29669976115",
+          "runAt": "2026-07-19T02:17:50Z"
+        }
       },
       {
         "slug": "stm32-multisensor-data-acquisition",
@@ -79,7 +104,16 @@
         "family": "stm32",
         "chip": "STM32F103",
         "summary": "多传感器数据采集教学原型，包含 Flash 历史与离线缓存、ESP-01S AT 联网、TCP JSON 工具、OLED 与告警。",
-        "mediaScope": "公开两张已去除 EXIF/GPS 并缩放的 2026-05-02 历史原型照片；未公开演示视频或 EDA/制造文件。"
+        "mediaScope": "公开两张已去除 EXIF/GPS 并缩放的 2026-05-02 历史原型照片；未公开演示视频或 EDA/制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "eaf088e4f16077381ddea2bbdef2bdf65414bf9e",
+          "headSha": "eaf088e4f16077381ddea2bbdef2bdf65414bf9e",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/firmware.yml",
+          "runUrl": "https://github.com/rongyishuaige7/stm32-multisensor-data-acquisition/actions/runs/38683114791",
+          "runAt": "2026-10-15T04:45:13Z"
+        }
       },
       {
         "slug": "lora-warehouse-tracking-system",
@@ -89,7 +123,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "仓库区域追踪教学原型，包含 LoRa 标签/网关固件、Flask/SQLite 服务与 Kotlin Android 客户端。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-08 历史原型照片，以及一份已移除 PDF 元数据的两页历史原理图；未公开演示视频。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-08 历史原型照片，以及一份已移除 PDF 元数据的两页历史原理图；未公开演示视频。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "c8b005855d8952f147024863caa52722e14b148f",
+          "headSha": "c8b005855d8952f147024863caa52722e14b148f",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/lora-warehouse-tracking-system/actions/runs/38683092641",
+          "runAt": "2026-10-15T04:44:58Z"
+        }
       },
       {
         "slug": "adaptive-traffic-signal-system",
@@ -99,7 +142,16 @@
         "family": "esp32",
         "chip": "ESP32-CAM × 4",
         "summary": "四路 ESP32-CAM 车流量自适应交通信号教学原型，包含 YOLOv8 跟踪/过线计数、FastAPI、Vue 3、WebSocket、12 路信号灯和四块 OLED。",
-        "mediaScope": "公开 2026-05-14 的历史桌面模型照片和仪表盘截图，以及已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。"
+        "mediaScope": "公开 2026-05-14 的历史桌面模型照片和仪表盘截图，以及已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "67168f6ba145fb85bb5f4028ed4558df9e0e5f64",
+          "headSha": "67168f6ba145fb85bb5f4028ed4558df9e0e5f64",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/adaptive-traffic-signal-system/actions/runs/38682970829",
+          "runAt": "2026-10-15T04:43:34Z"
+        }
       },
       {
         "slug": "esp32-s3-health-voice-terminal",
@@ -109,7 +161,16 @@
         "family": "esp32",
         "chip": "ESP32-S3",
         "summary": "基于本地唤醒、讯飞流式 ASR/TTS、DeepSeek SSE、双 I²S 音频和 LVGL 显示的健康科普语音终端教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-26 历史终端原型照片；未公开演示视频或 EDA/制造文件。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-26 历史终端原型照片；未公开演示视频或 EDA/制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "2c9befc6eaa606975902b013bc920b1dbfb908b8",
+          "headSha": "2c9befc6eaa606975902b013bc920b1dbfb908b8",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-s3-health-voice-terminal/actions/runs/38683018748",
+          "runAt": "2026-10-15T04:44:09Z"
+        }
       },
       {
         "slug": "raspberry-pi-rfid-room-card-system",
@@ -119,7 +180,16 @@
         "family": "rpi",
         "chip": "Raspberry Pi",
         "summary": "双 RC522 房卡管理教学原型，包含树莓派 Python 服务、MariaDB、Qt/C++ 管理端、服务端角色权限、房态与审计记录。",
-        "mediaScope": "保留四张已去元数据并遮盖私网 IP/UID 的 2026-04-03 历史界面截图，本批新增一张已去除 EXIF/GPS 并缩放的 2026-04-08 历史实物照片；本批其余 13 张旧截图和误投原理图未上传。"
+        "mediaScope": "保留四张已去元数据并遮盖私网 IP/UID 的 2026-04-03 历史界面截图，本批新增一张已去除 EXIF/GPS 并缩放的 2026-04-08 历史实物照片；本批其余 13 张旧截图和误投原理图未上传。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "7933f839acd07e222f6a7987fa8a4591affc272c",
+          "headSha": "7933f839acd07e222f6a7987fa8a4591affc272c",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/raspberry-pi-rfid-room-card-system/actions/runs/38683312415",
+          "runAt": "2026-10-15T04:47:25Z"
+        }
       },
       {
         "slug": "stm32-touch-gesture-control-system",
@@ -129,7 +199,16 @@
         "family": "stm32",
         "chip": "STM32F103",
         "summary": "使用四路电容触摸和 APDS-9960 隔空手势控制四路 LED，并通过 ESP-01S 本地热点展示状态与诊断的教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-02 历史原型照片，以及一份已移除 PDF 元数据的历史原理图；未公开演示视频。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-02 历史原型照片，以及一份已移除 PDF 元数据的历史原理图；未公开演示视频。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "b317da914a9a0a1068e1adbbb7132312af0bfbef",
+          "headSha": "b317da914a9a0a1068e1adbbb7132312af0bfbef",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/firmware.yml",
+          "runUrl": "https://github.com/rongyishuaige7/stm32-touch-gesture-control-system/actions/runs/38683131161",
+          "runAt": "2026-10-15T04:45:23Z"
+        }
       },
       {
         "slug": "esp32-smart-alarm-clock",
@@ -139,7 +218,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "基于 ESP32、OLED、DHT11、PIR、MAX98357A 与 Flutter 局域网客户端的智能闹钟教学原型。",
-        "mediaScope": "公开一张已去除元数据并遮盖私网 URL 的 2026-04-06 历史原型/App 照片，以及已脱敏的历史原理图和 UTF-8 BOM CSV；未分发原始 WAV。"
+        "mediaScope": "公开一张已去除元数据并遮盖私网 URL 的 2026-04-06 历史原型/App 照片，以及已脱敏的历史原理图和 UTF-8 BOM CSV；未分发原始 WAV。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "b24cf2c2b50e5a3104f68cf7c36987efdecf190a",
+          "headSha": "b24cf2c2b50e5a3104f68cf7c36987efdecf190a",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-smart-alarm-clock/actions/runs/38683042497",
+          "runAt": "2026-10-15T04:44:24Z"
+        }
       },
       {
         "slug": "esp32-smart-pillbox",
@@ -149,7 +237,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "基于 ESP32、双 PIR、双 HX711、RGB/蜂鸣器与 Flutter 局域网客户端的智能药盒教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-08 历史原型照片，以及一份已移除 PDF 元数据的历史原理图；未公开演示视频或制造文件。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-08 历史原型照片，以及一份已移除 PDF 元数据的历史原理图；未公开演示视频或制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "cd627a429c0976787f18cd8311eb19f49e685b69",
+          "headSha": "cd627a429c0976787f18cd8311eb19f49e685b69",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-smart-pillbox/actions/runs/38683070719",
+          "runAt": "2026-10-15T04:44:42Z"
+        }
       },
       {
         "slug": "esp32-weather-clock",
@@ -159,7 +256,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "基于 ESP32、DHT22、BH1750、DS3231、SSD1306 OLED 与本地 AP 配网的天气时钟教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-03-28 历史原型照片，以及已脱敏的历史原理图、PCB 预览和 UTF-8 BOM CSV；未公开 Gerber 或演示视频。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-03-28 历史原型照片，以及已脱敏的历史原理图、PCB 预览和 UTF-8 BOM CSV；未公开 Gerber 或演示视频。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "3bb7e7c8b368fcc9c4beddba5d8a326ed1b5cff6",
+          "headSha": "3bb7e7c8b368fcc9c4beddba5d8a326ed1b5cff6",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-weather-clock/actions/runs/38683083370",
+          "runAt": "2026-10-15T04:44:51Z"
+        }
       },
       {
         "slug": "esp32-s3-smart-safety-monitor",
@@ -169,7 +275,16 @@
         "family": "esp32",
         "chip": "ESP32-S3",
         "summary": "ESP32-S3 多传感器监测教学原型，包含 MQ-2/MQ-5 原始采样、火焰与超声波输入、OLED、本地状态页和低压执行器分时逻辑。",
-        "mediaScope": "公开已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。EDA 仅显示 GPIO9 一路 SG90，而当前源码定义 GPIO9/GPIO10 两路，故不能作为当前接线权威。"
+        "mediaScope": "公开已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。EDA 仅显示 GPIO9 一路 SG90，而当前源码定义 GPIO9/GPIO10 两路，故不能作为当前接线权威。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "13699f24e20d4d0b089035097ad7b71c69555613",
+          "headSha": "13699f24e20d4d0b089035097ad7b71c69555613",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-s3-smart-safety-monitor/actions/runs/38683032828",
+          "runAt": "2026-10-15T04:44:18Z"
+        }
       },
       {
         "slug": "raspberry-pi-weather-station",
@@ -179,7 +294,16 @@
         "family": "rpi",
         "chip": "Raspberry Pi",
         "summary": "树莓派采集 DHT22 温湿度与 BH1750 光照，写入 MySQL，经 Flask REST API 供 Avalonia / C# 上位机查看、查询历史和维护阈值的教学原型。",
-        "mediaScope": "公开三张已去元数据并按需遮盖终端用户名、路径和私网地址的 2026-04-07 历史界面/日志截图；未公开实物照片、演示视频或 EDA/制造文件。"
+        "mediaScope": "公开三张已去元数据并按需遮盖终端用户名、路径和私网地址的 2026-04-07 历史界面/日志截图；未公开实物照片、演示视频或 EDA/制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "108eb73c02961bd943bc47e4d48e9fb1c9427b54",
+          "headSha": "108eb73c02961bd943bc47e4d48e9fb1c9427b54",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/raspberry-pi-weather-station/actions/runs/38683323688",
+          "runAt": "2026-10-15T04:47:33Z"
+        }
       },
       {
         "slug": "esp32-baby-monitor",
@@ -189,7 +313,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "两路距离、温湿度与声音幅度输入驱动 ESP32 中的演示级固定阈值分类、RGB/蜂鸣器本地反馈和可选可信局域网 JSON 接口。",
-        "mediaScope": "公开两张已去除 EXIF/GPS 并缩放的 2026-04-08 历史原型照片，以及一份已移除 PDF 元数据的历史原理图；原理图不消除 HC-SR04 5 V ECHO 电平风险。"
+        "mediaScope": "公开两张已去除 EXIF/GPS 并缩放的 2026-04-08 历史原型照片，以及一份已移除 PDF 元数据的历史原理图；原理图不消除 HC-SR04 5 V ECHO 电平风险。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "050f45da226d59f1bb51e6deed0be32f7ce7ece2",
+          "headSha": "050f45da226d59f1bb51e6deed0be32f7ce7ece2",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-baby-monitor/actions/runs/38683273377",
+          "runAt": "2026-10-15T04:47:00Z"
+        }
       },
       {
         "slug": "esp32-beehive-monitor",
@@ -199,7 +332,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "ESP32 读取 DHT11、BH1750、BMP280、模拟声音幅度和 MQ-2 原始 ADC；使用者本地配置后，Flutter 客户端可在可信局域网请求一条本地 JSON 响应。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放但拍摄日期未知的历史原型照片，以及已脱敏的历史原理图、PCB 预览和 UTF-8 BOM CSV；未公开 Gerber 或演示视频。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放但拍摄日期未知的历史原型照片，以及已脱敏的历史原理图、PCB 预览和 UTF-8 BOM CSV；未公开 Gerber 或演示视频。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "da4a4a076d8f1a94e6d009189f4f108ccc6ee64f",
+          "headSha": "da4a4a076d8f1a94e6d009189f4f108ccc6ee64f",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-beehive-monitor/actions/runs/38683001244",
+          "runAt": "2026-10-15T04:43:57Z"
+        }
       },
       {
         "slug": "esp32-smart-light-controller",
@@ -209,7 +351,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "基于 ESP32、四路低压 LED 与可选 BH1750 的本地智能照明教学原型，演示四路手动控制、倒计时与环境亮度触发的四路联动自动逻辑。",
-        "mediaScope": "当前未公开实物照片、演示视频、原理图、PCB、Gerber 或制造文件；已公开固件、BOM、源码推导接线边界图、协议、来源、状态与验证说明。"
+        "mediaScope": "当前未公开实物照片、演示视频、原理图、PCB、Gerber 或制造文件；已公开固件、BOM、源码推导接线边界图、协议、来源、状态与验证说明。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "961a3f012cc9aab9f67346282f7c4bc8aad0878a",
+          "headSha": "961a3f012cc9aab9f67346282f7c4bc8aad0878a",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-smart-light-controller/actions/runs/38683061055",
+          "runAt": "2026-10-15T04:44:36Z"
+        }
       },
       {
         "slug": "esp32-smart-makeup-cabinet",
@@ -219,7 +370,16 @@
         "family": "esp32",
         "chip": "ESP32",
         "summary": "基于 ESP32、DHT11、GUVA-S12SD、PIR、RC522 与 Flutter 的智能化妆品收纳与环境管理教学原型；公开默认不提供 Wi-Fi/HTTP 或实体输出。",
-        "mediaScope": "公开一张历史原型照片和三张历史界面截图，均为 2026-04-08 且已去除 EXIF/GPS 并缩放；未公开演示视频或 EDA/制造文件。"
+        "mediaScope": "公开一张历史原型照片和三张历史界面截图，均为 2026-04-08 且已去除 EXIF/GPS 并缩放；未公开演示视频或 EDA/制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "f6247c52537b3f4c4ba06e7fa47682923e843bc4",
+          "headSha": "f6247c52537b3f4c4ba06e7fa47682923e843bc4",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-smart-makeup-cabinet/actions/runs/29670325600",
+          "runAt": "2026-07-19T02:31:23Z"
+        }
       },
       {
         "slug": "esp32-c3-smart-band",
@@ -229,7 +389,16 @@
         "family": "esp32",
         "chip": "ESP32-C3",
         "summary": "基于 ESP32-C3、MAX30102、MPU6050、DS18B20、GPS、OLED 与 Flutter BLE 客户端的多传感器数据展示教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-29 历史原型照片，以及已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-04-29 历史原型照片，以及已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "4c7683f500e4262ef49f631e7102a0422f291e4c",
+          "headSha": "4c7683f500e4262ef49f631e7102a0422f291e4c",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-c3-smart-band/actions/runs/29669973669",
+          "runAt": "2026-07-19T02:17:45Z"
+        }
       },
       {
         "slug": "arduino-multisensor-audio-demo",
@@ -239,7 +408,16 @@
         "family": "arduino",
         "chip": "Arduino Uno",
         "summary": "基于 Arduino Uno、MAX30100、DHT11、DS18B20、BH1750、MPU6050、HC-05、DFPlayer 与 Flutter Android 客户端的多传感器数据展示与音频联动教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的历史硬件照片，拍摄日期未知；误投到本项目的 RFID 原理图未上传。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的历史硬件照片，拍摄日期未知；误投到本项目的 RFID 原理图未上传。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "983560336b7312cdbac5b0569ac140a407712d50",
+          "headSha": "983560336b7312cdbac5b0569ac140a407712d50",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/arduino-multisensor-audio-demo/actions/runs/29669942031",
+          "runAt": "2026-07-19T02:16:28Z"
+        }
       },
       {
         "slug": "esp32-s3-smart-agriculture-monitoring-system",
@@ -249,7 +427,16 @@
         "family": "esp32",
         "chip": "ESP32-S3",
         "summary": "基于 ESP32-S3、DHT11、BH1750、ACD10、BMP280、OLED 与 Avalonia/.NET 8 示例数据界面的环境监测教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-03-24 历史原型照片，以及已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-03-24 历史原型照片，以及已脱敏的历史原理图、PCB 预览、UTF-8 BOM CSV 和解包后的 Gerber/Drill；未上传原 Gerber ZIP。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "986900de1487801f6889b4e269215608803a5623",
+          "headSha": "986900de1487801f6889b4e269215608803a5623",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/esp32-s3-smart-agriculture-monitoring-system/actions/runs/29670303834",
+          "runAt": "2026-07-19T02:30:33Z"
+        }
       },
       {
         "slug": "stm32f103-wardrobe-environment-monitoring-ventilation-system",
@@ -259,7 +446,16 @@
         "family": "stm32",
         "chip": "STM32F103",
         "summary": "基于 STM32F103、DHT11、MQ135 原始 ADC、OLED 与默认关闭风扇输出的衣柜环境监测和通风控制教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-05-25 历史衣柜监测原型照片；未公开演示视频或 EDA/制造文件。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-05-25 历史衣柜监测原型照片；未公开演示视频或 EDA/制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "5ebccbd8d879ee82576c7e9937539a50283b9af9",
+          "headSha": "5ebccbd8d879ee82576c7e9937539a50283b9af9",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/validate.yml",
+          "runUrl": "https://github.com/rongyishuaige7/stm32f103-wardrobe-environment-monitoring-ventilation-system/actions/runs/29670057922",
+          "runAt": "2026-07-19T02:21:06Z"
+        }
       },
       {
         "slug": "raspberry-pi-home-environment-activity-monitoring-demo",
@@ -269,11 +465,28 @@
         "family": "rpi",
         "chip": "Raspberry Pi",
         "summary": "基于树莓派、Flask/MySQL 后端与 Android Compose 查看端的居家环境和活动状态监测教学原型。",
-        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-03-17 历史教学原型照片；本批四张旧界面截图未上传，未公开 APK、演示视频或 EDA/制造文件。"
+        "mediaScope": "公开一张已去除 EXIF/GPS 并缩放的 2026-03-17 历史教学原型照片；本批四张旧界面截图未上传，未公开 APK、演示视频或 EDA/制造文件。",
+        "evidence": {
+          "status": "verified",
+          "indexedSha": "d2991515dd86e63fa69cec0c17fd9023ed341523",
+          "headSha": "d2991515dd86e63fa69cec0c17fd9023ed341523",
+          "defaultBranch": "main",
+          "workflow": ".github/workflows/ci.yml",
+          "runUrl": "https://github.com/rongyishuaige7/raspberry-pi-home-environment-activity-monitoring-demo/actions/runs/29670051197",
+          "runAt": "2026-07-19T02:20:48Z"
+        }
       }
     ]
   },
   "updates": [
+    {
+      "date": "2026-10-20T00:00:00.000Z",
+      "lane": "touch",
+      "type": "INDEX",
+      "title": "Hardware Lab 收录 22 个公开项目",
+      "text": "ESP32、STM32、树莓派与 Arduino 原型统一核对默认分支、提交与固定 Actions 链接。",
+      "href": "https://github.com/rongyishuaige7/hardware-lab"
+    },
     {
       "date": "2026-10-15T10:01:10.869Z",
       "lane": "see",
@@ -291,14 +504,6 @@
       "href": "https://www.npmjs.com/package/@rongyi7/dsh-spec"
     },
     {
-      "date": "2026-07-19T00:00:00.000Z",
-      "lane": "touch",
-      "type": "INDEX",
-      "title": "Hardware Lab 收录 22 个公开项目",
-      "text": "ESP32、STM32、树莓派与 Arduino 原型统一核对默认分支、提交与固定 Actions 链接。",
-      "href": "https://github.com/rongyishuaige7/hardware-lab"
-    },
-    {
       "date": "2026-07-16T15:52:36Z",
       "lane": "see",
       "type": "RELEASE",
@@ -311,7 +516,7 @@
       "lane": "see",
       "type": "RELEASE",
       "title": "Problem Solution Recorder v0.2.0",
-      "text": "This release hardens the Markdown-native problem-solving archive for sa…",
+      "text": "加固 Markdown 原生排障档案：保留手写笔记、转义表格单元格，并加入知识库泄露密钥扫描。",
       "href": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/releases/tag/v0.2.0"
     }
   ]

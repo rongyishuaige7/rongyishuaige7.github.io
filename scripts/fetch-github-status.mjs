@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { artifactStatusForCi, ciRunAgeHours, ciStatusForHead, isArtifactAvailable } from "./github-status-semantics.mjs";
+import { artifactStatusForCi, isArtifactAvailable } from "./github-status-semantics.mjs";
+import { workflowSignal } from "./github-evidence.mjs";
 
 const owner = "rongyishuaige7";
 const requestTimeoutMs = 12_000;
@@ -7,16 +8,16 @@ const retryDelaysMs = [500, 1_500];
 
 const repositories = [
   { repo: "yipan-showcase" },
-  { repo: "dsh-stats", workflow: "ci.yml" },
+  { repo: "dsh-stats", workflow: "ci.yml", scope: "插件检查" },
   { repo: "dsh-spec" },
   { repo: "tech-mentor" },
-  { repo: "problem-solution-recorder-oss", workflow: "validate.yml" },
+  { repo: "problem-solution-recorder-oss", workflow: "validate.yml", scope: "Skill 检查" },
   { repo: "ningque" },
-  { repo: "devflow-recorder", workflow: "ci.yml" },
-  { repo: "memory-monitor", workflow: "ci.yml" },
-  { repo: "pet-desktop-tauri", workflow: "ci.yml" },
-  { repo: "hardware-lab", workflow: "validate.yml" },
-  { repo: "ESP32_RPS_Game", workflow: "ci.yml", artifacts: true }
+  { repo: "devflow-recorder", workflow: "ci.yml", scope: "Web 测试与构建" },
+  { repo: "memory-monitor", workflow: "ci.yml", scope: "扩展检查" },
+  { repo: "pet-desktop-tauri", workflow: "ci.yml", scope: "Web 测试与构建" },
+  { repo: "hardware-lab", workflow: "validate.yml", scope: "索引检查" },
+  { repo: "ESP32_RPS_Game", workflow: "ci.yml", scope: "固件构建", artifacts: true }
 ];
 
 const token = process.env.GITHUB_TOKEN;
@@ -74,49 +75,6 @@ async function latestRelease(repo) {
   }
 }
 
-async function workflowSignal(repo, workflow, defaultBranch, headSha) {
-  if (!workflow) return { status: "not_configured" };
-
-  try {
-    const runs = await api(
-      `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(workflow)}/runs?branch=${encodeURIComponent(defaultBranch)}&event=push&per_page=20`
-    );
-    const candidates = runs.workflow_runs ?? [];
-    const { run: matchingHead } = ciStatusForHead(candidates, headSha);
-
-    if (!matchingHead) {
-      return {
-        status: "unverified",
-        workflow,
-        headSha,
-        latestRun: candidates[0]
-          ? {
-              status: candidates[0].status,
-              conclusion: candidates[0].conclusion,
-              headSha: candidates[0].head_sha,
-              url: candidates[0].html_url,
-              runAt: candidates[0].run_started_at ?? candidates[0].created_at
-            }
-          : null
-      };
-    }
-
-    const runAt = matchingHead.run_started_at ?? matchingHead.created_at;
-    const ageHours = ciRunAgeHours(runAt);
-    return {
-      status: matchingHead.status,
-      conclusion: matchingHead.conclusion,
-      workflow,
-      url: matchingHead.html_url,
-      headSha: matchingHead.head_sha,
-      runAt,
-      ageHours: ageHours === null ? null : Math.round(ageHours * 10) / 10
-    };
-  } catch (error) {
-    return { status: "unknown", workflow, error: errorInfo(error) };
-  }
-}
-
 async function artifactSignal(repo, ci, enabled) {
   if (!enabled) return { status: "not_configured" };
   const preflight = artifactStatusForCi(ci.status, Boolean(ci.url));
@@ -158,7 +116,7 @@ for (const config of repositories) {
     const headSha = branch.commit.sha;
     const [release, ci] = await Promise.all([
       latestRelease(config.repo),
-      workflowSignal(config.repo, config.workflow, details.default_branch, headSha)
+      workflowSignal({ owner, repo: config.repo, workflow: config.workflow, branch: details.default_branch, headSha, scope: config.scope }, api)
     ]);
     const artifact = await artifactSignal(config.repo, ci, config.artifacts);
 
@@ -188,7 +146,7 @@ for (const config of repositories) {
       headSha: null,
       headCommittedAt: null,
       pushedAt: null,
-      ci: config.workflow ? { status: "unknown", workflow: config.workflow, error: info } : { status: "not_configured" },
+      ci: config.workflow ? { status: "unknown", workflow: config.workflow, scope: config.scope, error: info } : { status: "not_configured" },
       release: { status: "unknown", error: info },
       artifact: config.artifacts ? { status: "unknown", error: info } : { status: "not_configured" }
     };

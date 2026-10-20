@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { releaseSummaries } from "./release-summaries.mjs";
 import { chipFamily, isOwnedPublicHref, releaseFeedText, summarizeNpmDoc } from "./studio-semantics.mjs";
+import { hardwareEvidence } from "./github-evidence.mjs";
 
 const owner = "rongyishuaige7";
 const requestTimeoutMs = 12_000;
@@ -61,6 +62,7 @@ try {
 
 const npm = {};
 const npmFailures = [];
+const downloadFailures = [];
 for (const name of npmPackages) {
   const encoded = name.replace("/", "%2F");
   try {
@@ -70,9 +72,11 @@ for (const name of npmPackages) {
     ]);
     const summary = summarizeNpmDoc(doc);
     if (!summary) throw new Error(`no dated latest version for ${name}`);
+    if (!Number.isFinite(downloads?.downloads)) downloadFailures.push(name);
     const url = `https://www.npmjs.com/package/${name}`;
     npm[name] = {
       ...summary,
+      downloadsStatus: Number.isFinite(downloads?.downloads) ? "ok" : "unknown",
       downloadsLastMonth: Number.isFinite(downloads?.downloads) ? downloads.downloads : null,
       downloadsWindow: downloads?.start && downloads?.end ? { start: downloads.start, end: downloads.end } : null,
       url
@@ -91,15 +95,25 @@ for (const name of npmPackages) {
     npm[name] = { status: "unknown", error: errorInfo(error) };
   }
 }
-sources.npm = { status: npmFailures.length === 0 ? "ok" : npmFailures.length === npmPackages.length ? "unknown" : "partial", failed: npmFailures };
+sources.npm = { status: npmFailures.length === npmPackages.length ? "unknown" : npmFailures.length || downloadFailures.length ? "partial" : "ok", failed: npmFailures, downloadsFailed: downloadFailures };
 
 let hardware = { status: "unknown", indexUrl: `https://github.com/${owner}/hardware-lab`, projects: [] };
 if (publicRepos) {
   try {
     const file = await github(`/repos/${owner}/hardware-lab/contents/projects.yml`);
     const index = JSON.parse(Buffer.from(file.content, "base64").toString("utf8"));
-    const projects = (index.projects ?? [])
-      .map((project) => {
+    const indexed = (index.projects ?? []).filter((project) => publicRepos.has(String(project.repo ?? "").split("/").pop()) && isOwnedPublicHref(project.repo, owner));
+    // Four workers bound API pressure; output order remains the curated index order.
+    const evidence = new Array(indexed.length);
+    let next = 0;
+    await Promise.all(Array.from({ length: Math.min(4, indexed.length) }, async () => {
+      while (next < indexed.length) {
+        const index = next++;
+        evidence[index] = await hardwareEvidence(indexed[index], { owner, api: github });
+      }
+    }));
+    const projects = indexed
+      .map((project, index) => {
         const slug = String(project.repo ?? "").split("/").pop();
         return {
           slug,
@@ -108,7 +122,8 @@ if (publicRepos) {
           platform: project.platform,
           ...chipFamily(project.platform),
           summary: project.summary,
-          mediaScope: project.media_scope ?? null
+          mediaScope: project.media_scope ?? null,
+          evidence: evidence[index]
         };
       })
       .filter((project) => publicRepos.has(project.slug) && isOwnedPublicHref(project.repo, owner));
@@ -128,6 +143,7 @@ if (publicRepos) {
   }
 }
 sources.hardware = { status: hardware.status, count: hardware.projects.length };
+sources.hardwareEvidence = { status: hardware.status !== "ok" ? "unknown" : hardware.projects.every((project) => project.evidence.status === "verified") ? "ok" : "partial", verified: hardware.projects.filter((project) => project.evidence.status === "verified").length };
 
 const releaseFailures = [];
 if (publicRepos) {
