@@ -1,5 +1,6 @@
 ---
 import "@fontsource-variable/geist/index.css";
+import geistLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
 import "../styles/global.css";
 import "../styles/studio.css";
 import "../styles/motion.css";
@@ -186,6 +187,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <meta name="twitter:image" content={socialImage} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
     <link rel="canonical" href={siteUrl} />
+    <link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -205,7 +207,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
 
     <header class="site-header" data-header>
-      <a class="wordmark" href="#top" aria-label="RONGYI STUDIO 首页">
+      <a class="wordmark" href="#top" aria-label="R RONGYI / STUDIO 首页">
         <span aria-hidden="true">R</span><b>RONGYI</b><small>/ STUDIO</small>
       </a>
       <nav aria-label="主导航" data-lane-nav>
