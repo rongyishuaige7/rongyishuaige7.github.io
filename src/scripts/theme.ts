@@ -41,6 +41,7 @@ export function initTheme() {
     root.dataset.theme = theme;
     if (meta) meta.content = theme === LIGHT ? "#f4f6f9" : "#07090d";
     sync();
+    document.dispatchEvent(new CustomEvent("rongyi:themechange", { detail: { theme } }));
   };
   // A blocked-storage start leaves no attribute behind; follow the system rather than pin dark.
   if (!root.dataset.theme) commit(systemLight.matches ? LIGHT : DARK);
