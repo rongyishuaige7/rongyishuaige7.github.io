@@ -1,4 +1,4 @@
-import { SCENES, ParticleMorph, along, clamp, structureFor, wrap, type Scene, type Vec } from "./particle-scenes";
+import { SCENES, ParticleMorph, along, clamp, edgeFade, structureFor, wrap, type Scene, type Vec } from "./particle-scenes";
 import { SECTION_EVENT } from "./section-state";
 
 type RGB = [number, number, number];
@@ -23,7 +23,7 @@ export function initParticleField() {
   const currentScene = (): Scene => SCENES.includes(root.dataset.section as Scene) ? root.dataset.section as Scene : "top";
   const morph = new ParticleMorph(currentScene(), layout());
   let width = 1, height = 1, ratio = 1, scroll = window.scrollY;
-  let frame = 0, measureFrame = 0, previous = 0, elapsed = 0, pending = 0;
+  let frame = 0, measureFrame = 0, previous = 0, elapsed = 0;
   let active = true, disposed = false;
   let pointer: Vec | null = null;
   let protectedRects: ProtectedRect[] = [];
@@ -72,9 +72,10 @@ export function initParticleField() {
         context.fillRect(x - 0.8, y - 0.8, 1.6, 1.6);
       }
       if (!reduce.matches && structure.tracks.length) {
-        context.globalAlpha = weight * 0.72;
         for (let i = 0; i < structure.tracks.length; i += 2) {
-          const [x, y] = point(along(structure.tracks[i], wrap(elapsed * (scene === "carry" ? 0.06 : 0.035) + i * 0.19)));
+          const progress = wrap(elapsed * (scene === "carry" ? 0.06 : 0.035) + i * 0.19);
+          context.globalAlpha = weight * 0.72 * edgeFade(progress);
+          const [x, y] = point(along(structure.tracks[i], progress));
           context.beginPath(); context.arc(x, y, 1.8, 0, Math.PI * 2); context.fill();
         }
       }
@@ -112,8 +113,9 @@ export function initParticleField() {
       context.fillRect(rect.x, y, rect.width, rect.height);
     }
     context.globalCompositeOperation = "source-over";
-    canvas.dataset.scene = morph.scene;
-    canvas.dataset.particles = String(morph.layout.count);
+    if (canvas.dataset.scene !== morph.scene) canvas.dataset.scene = morph.scene;
+    const count = String(morph.layout.count);
+    if (canvas.dataset.particles !== count) canvas.dataset.particles = count;
   };
 
   const measure = () => {
@@ -159,8 +161,8 @@ export function initParticleField() {
     frame = 0;
     if (!active || disposed || document.hidden || reduce.matches) return;
     const delta = previous ? Math.min(0.1, (timestamp - previous) / 1000) : 0;
-    previous = timestamp; elapsed += delta; pending += delta;
-    if (pending >= 1 / 30) { pending %= 1 / 30; draw(); }
+    previous = timestamp; elapsed += delta;
+    draw();
     frame = requestAnimationFrame(tick);
   };
   const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0; };

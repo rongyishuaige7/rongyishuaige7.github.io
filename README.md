@@ -27,7 +27,7 @@ npm run dev
 - Yi盘当前处于受控内测，正在完成上市前验证；CI 不代表三个系统都已完成真机测试。
 - Yi盘真实截图将在获得真实产品素材后补充；当前页面使用明确标注的功能示意图。首屏工作室图同样是示意图，不代表真实数据。Yi盘章节的结构示意按 `yipan-showcase` README 与个人主页流程图绘制：盘内资料与任务、工作台、产出与任务记录在盘内闭环，云端模型只按需推理。
 - 主题：默认跟随系统，页头开关在深色与浅色之间切换，选择记在 `localStorage` 的 `rongyi-theme`。切换时新配色从开关位置以圆形揭开（View Transitions），不支持或开启减少动态效果时直接切换。浅色沿用 README 卡片的浅色板，正文对比度不低于 4.5:1。
-- 粒子：单个 Canvas 2D 随章节在首屏三组粒子、橙色数据通道、蓝色观测轨道、绿色点阵走线、分层检查路径和稀疏时间轴之间连续变形。780ms 过渡支持中途重新定向，标题、正文、截图和既有 PCB 动画有保护区域。固定种子、30fps、DPR 上限 1.5、后台暂停与历史返回恢复；减少动态效果时静态显示当前章节，主题/章节改变时重绘。实现与验收见 [`docs/particle-scenes.md`](./docs/particle-scenes.md)。
+- 粒子：单个 Canvas 2D 随章节在首屏三组粒子、橙色数据通道、蓝色观测轨道、绿色点阵走线、分层检查路径和稀疏时间轴之间连续变形。780ms 过渡支持中途重新定向，标题、正文、截图和既有 PCB 动画有保护区域。固定种子、随浏览器刷新绘制、轨迹循环淡出、DPR 上限 1.5、后台暂停与历史返回恢复；减少动态效果时静态显示当前章节，主题/章节改变时重绘。实现与验收见 [`docs/particle-scenes.md`](./docs/particle-scenes.md)。
 - 动效：首屏入口进入视口时各播放一次悬停预览；DSH 截图每 6 秒轮换，悬停截图或键盘聚焦标签时暂停，手动选择后停止。离屏、后台标签页和减少动态效果时不运行循环。
 - DSH Usage 截图取自 dsh-stats 仓库的真实运行界面（深色主题、showcase 夹具数据，项目名为占位），存放在 `src/assets/dsh/`。`*-dark.png` 由 dsh-stats `85608a0` 的浏览器夹具以 1440px、2x 截取，只去掉面板外框并裁到相同高度。
 - 工具缩略图取自各仓库自己公开的画面，存放在 `src/assets/tools/<slug>.png`：DevFlow Recorder 为 `docs/screenshots/timeline-preview.png`（`fbca29b`，浏览器预览模式，条目标为示例数据），原图未裁剪；Desktop Pet 为 `docs/screenshots/studio.png`（`d57081d`，浏览器模式加载的模拟帧包），只裁出动作舞台；宁缺为 `assets/ningque-001-og.png`（`8388390`，第 001 号判词分享图），原图未裁剪。没有公开截图的工具（dsh-spec、Tech Mentor、Problem Solution Recorder、Memory Monitor）保持纯文字行。

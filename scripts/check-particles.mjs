@@ -17,7 +17,16 @@ console.log(`Artifacts: ${output}`);
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 2, colorScheme: "dark" });
   await context.addInitScript(() => {
-    window.__particleCheck = { frames: 0, costs: [], persisted: false };
+    window.__particleCheck = { frames: 0, costs: [], frameCosts: [], drawRafs: [], persisted: false };
+    const requestFrame = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = callback => requestFrame(timestamp => {
+      const state = window.__particleCheck, before = state.frames, started = performance.now();
+      callback(timestamp);
+      if (state.frames > before) {
+        state.drawRafs.push(timestamp);
+        state.frameCosts.push(performance.now() - started);
+      }
+    });
     addEventListener("pageshow", event => { window.__particleCheck.persisted = event.persisted; });
     const clear = CanvasRenderingContext2D.prototype.clearRect;
     const composite = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, "globalCompositeOperation");
@@ -40,6 +49,26 @@ try {
   page.on("pageerror", error => errors.push(error.message));
   await page.goto(base, { waitUntil: "networkidle" });
   const frames = () => page.evaluate(() => window.__particleCheck.frames);
+  const cadence = async () => page.evaluate(async () => {
+    const opportunities = [];
+    await new Promise(resolve => {
+      const sample = timestamp => {
+        opportunities.push(timestamp);
+        if (opportunities.length < 90) requestAnimationFrame(sample);
+        else resolve();
+      };
+      requestAnimationFrame(sample);
+    });
+    // Exclude the end callbacks so registration order cannot affect the count.
+    const start = opportunities[1], end = opportunities.at(-2);
+    const draws = window.__particleCheck.drawRafs.filter(time => time >= start && time <= end);
+    const intervals = times => times.slice(1).map((time, i) => time - times[i]).sort((a, b) => a - b);
+    const stats = times => {
+      const values = intervals(times);
+      return { medianMs: values[Math.floor(values.length * 0.5)], p95Ms: values[Math.floor(values.length * 0.95)], maxMs: values.at(-1) };
+    };
+    return { draws: draws.length, opportunities: opportunities.length - 2, ratio: draws.length / (opportunities.length - 2), drawing: stats(draws), refresh: stats(opportunities) };
+  });
   const scene = async (id, wait = 900) => {
     await page.evaluate(id => {
       const el = document.getElementById(id);
@@ -79,6 +108,16 @@ try {
     }
     return { tested, ink, violations };
   });
+
+  const cadenceResults = [];
+  for (const [width, id] of [[1440, "top"], [1440, "carry"], [390, "touch"]]) {
+    await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 });
+    await scene(id);
+    const sample = await cadence();
+    assert.ok(sample.ratio >= 0.98 && sample.ratio <= 1.02, `${width}/${id}: draw on every available refresh: ${JSON.stringify(sample)}`);
+    cadenceResults.push({ width, id, ...sample });
+  }
+  console.log("Passed desktop/mobile drawing cadence: one draw per browser refresh");
 
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 });
@@ -141,8 +180,11 @@ try {
     await page.waitForTimeout(200); assert.ok(await frames() > paused);
   }
   const performance = await page.evaluate(() => {
-    const costs = window.__particleCheck.costs.slice(10).sort((a, b) => a - b);
-    return { draws: window.__particleCheck.frames, medianMs: costs[Math.floor(costs.length * 0.5)], p95Ms: costs[Math.floor(costs.length * 0.95)], maxMs: costs.at(-1) };
+    const stats = samples => {
+      const costs = samples.slice(10).sort((a, b) => a - b);
+      return { medianMs: costs[Math.floor(costs.length * 0.5)], p95Ms: costs[Math.floor(costs.length * 0.95)], maxMs: costs.at(-1) };
+    };
+    return { draws: window.__particleCheck.frames, canvasCommands: stats(window.__particleCheck.costs), fullCallback: stats(window.__particleCheck.frameCosts) };
   });
   await page.goto(new URL("404.html", base).href, { waitUntil: "networkidle" });
   await page.goBack({ waitUntil: "load" });
@@ -163,8 +205,42 @@ try {
   assert.equal(await fallback.locator("[data-theme-toggle]").isVisible(), false);
   assert.equal(await fallback.locator("canvas").evaluate(c => [...c.getContext("2d").getImageData(0, 0, c.width, c.height).data].some(Boolean)), false);
   await noJS.close();
+
+  // A controlled rAF driver checks high-refresh scheduling, independently of
+  // the headless browser's physical refresh rate. It is not a GPU benchmark.
+  const clockContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await clockContext.addInitScript(() => {
+    let next = 0, timestamp = 1000;
+    const pending = new Map();
+    const clock = window.__particleClock = { draws: 0, step: null };
+    window.requestAnimationFrame = callback => { const id = ++next; pending.set(id, callback); return id; };
+    window.cancelAnimationFrame = id => { pending.delete(id); };
+    const clear = CanvasRenderingContext2D.prototype.clearRect;
+    CanvasRenderingContext2D.prototype.clearRect = function (...args) {
+      if (this.canvas.hasAttribute("data-particle-field")) clock.draws++;
+      return clear.apply(this, args);
+    };
+    clock.step = (fps, frames) => {
+      const before = clock.draws;
+      for (let frame = 0; frame < frames; frame++) {
+        timestamp += 1000 / fps;
+        for (const [id, callback] of [...pending]) if (pending.delete(id)) callback(timestamp);
+      }
+      return clock.draws - before;
+    };
+  });
+  const clockPage = await clockContext.newPage();
+  clockPage.on("pageerror", error => errors.push(error.message));
+  await clockPage.goto(base, { waitUntil: "networkidle" });
+  const refreshContracts = await clockPage.evaluate(() => {
+    window.__particleClock.step(60, 3);
+    return [60, 120, 144].map(fps => ({ fps, draws: window.__particleClock.step(fps, fps) }));
+  });
+  for (const { fps, draws } of refreshContracts) assert.equal(draws, fps, `one draw per simulated ${fps}Hz refresh`);
+  await clockContext.close();
+  console.log("Passed controlled 60/120/144Hz rAF scheduling");
   assert.deepEqual(errors, []);
-  await writeFile(join(output, "results.json"), JSON.stringify({ base, results, performance, restoredFromCache, errors }, null, 2));
+  await writeFile(join(output, "results.json"), JSON.stringify({ base, results, cadenceResults, refreshContracts, performance, restoredFromCache, errors }, null, 2));
   await context.close();
   console.log(JSON.stringify({ passed: true, performance, output }));
 } finally { await browser.close(); }

@@ -48,12 +48,61 @@ test("rapid reversal begins at the last rendered pose and preserves topology opa
 });
 
 test("the morph clock is independent of drawing frequency", () => {
-  const a = new ParticleMorph("carry", desktop), b = new ParticleMorph("carry", desktop);
-  a.setScene("see", desktop, 0); b.setScene("see", desktop, 0);
-  for (let frame = 1; frame <= 30; frame++) a.advance(frame / 60);
-  for (let frame = 1; frame <= 15; frame++) b.advance(frame / 30);
-  assert.deepEqual(a.poses, b.poses);
-  assert.deepEqual(a.weights, b.weights);
+  const fields = [30, 60, 120, 144].map(fps => {
+    const field = new ParticleMorph("carry", desktop);
+    field.setScene("see", desktop, 0);
+    for (let frame = 1; frame <= fps * 1.5; frame++) field.advance(frame / fps);
+    return field;
+  });
+  for (const field of fields.slice(1)) {
+    assert.deepEqual(field.poses, fields[0].poses);
+    assert.deepEqual(field.weights, fields[0].weights);
+  }
+});
+
+test("open-track loops and ambient dust wrap only while invisible", () => {
+  const seeds = createSeeds();
+  for (const scene of SCENES.filter(scene => scene !== "top")) {
+    for (let i = 0; i < seeds.length; i++) {
+      const seed = seeds[i];
+      if (seed.dust || scene === "touch" && i % 3 !== 0) continue;
+      const pace = scene === "carry" ? 0.7 : scene === "see" ? 0.65 : 0.23;
+      const boundary = (1 - seed.u) / (seed.speed * pace);
+      for (const offset of [-1 / 120, 0, 1 / 120]) {
+        const pose = sampleScene(scene, seed, i, boundary + offset, desktop);
+        assert.ok(pose.alpha < 0.0001, `${scene}/${i}: a particle must fade before crossing the open track`);
+      }
+    }
+  }
+  for (const [i, seed] of seeds.entries()) {
+    if (!seed.dust) continue;
+    const boundary = seed.v / (seed.speed * 0.13);
+    for (const offset of [-1 / 120, 0, 1 / 120]) {
+      assert.ok(sampleScene("top", seed, i, boundary + offset, desktop).alpha < 0.0001);
+    }
+  }
+  const atHorizontalEdge = { ...seeds[0], u: 0.99, phase: Math.PI / 2 };
+  assert.equal(sampleScene("top", atHorizontalEdge, 0, 0, desktop).alpha, 0);
+});
+
+test("a destination crossing its loop cannot teleport particles during a morph", () => {
+  const field = new ParticleMorph("top", desktop);
+  const seed = field.seeds[1];
+  const crossing = (1 - seed.u) / (seed.speed * 0.7);
+  const start = crossing - 0.5;
+  field.advance(start);
+  field.setScene("carry", desktop, start);
+  let previous = copy(field.poses);
+  for (let frame = 0; frame <= 120; frame++) {
+    field.advance(start + frame / 120);
+    for (let i = 0; i < field.poses.length; i++) {
+      const pose = field.poses[i], from = previous[i];
+      assert.ok(Math.hypot(pose.x - from.x, pose.y - from.y) < 0.03, `frame ${frame}, particle ${i}: continuous assembly`);
+    }
+    if (frame / 120 <= MORPH_SECONDS) assert.equal(field.flowTime, start);
+    previous = copy(field.poses);
+  }
+  assert.ok(field.flowTime > start, "orbital flow resumes after assembly");
 });
 
 test("reduced motion directly selects a time-invariant scene", () => {

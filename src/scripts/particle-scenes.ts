@@ -11,6 +11,8 @@ export const MORPH_SECONDS = 0.78;
 export const wrap = (value: number) => ((value % 1) + 1) % 1;
 export const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 2 * t); };
+// Open tracks wrap spatially, so their endpoints must be invisible.
+export const edgeFade = (progress: number, edge = 0.045) => smooth(progress / edge) * smooth((1 - progress) / edge);
 
 export function createSeeds(count = 300): Seed[] {
   let state = 0x5f3a91;
@@ -98,7 +100,9 @@ export function sampleScene(scene: Scene, seed: Seed, index: number, time: numbe
   let alpha = 0.26 + depth * 0.44;
   const size = seed.size * (0.72 + depth * 0.34);
   if (seed.dust) {
-    return { x: wrap(u + Math.sin(time * 0.13 + phase) * 0.01), y: wrap(v - time * speed * 0.13), alpha: 0.09 + depth * 0.15, size: size * 0.72 };
+    x = wrap(u + Math.sin(time * 0.13 + phase) * 0.01);
+    y = wrap(v - time * speed * 0.13);
+    return { x, y, alpha: (0.09 + depth * 0.15) * edgeFade(x, 0.025) * edgeFade(y, 0.025), size: size * 0.72 };
   }
   if (scene === "top") {
     const center = layout.mobile ? [0.25, 0.68, 0.43][group % 3] : 0.18 + (group % 3) * 0.32;
@@ -118,7 +122,9 @@ export function sampleScene(scene: Scene, seed: Seed, index: number, time: numbe
     const paths = structureFor(scene, layout.mobile).tracks;
     const path = paths[group % paths.length];
     const pace = scene === "carry" ? 0.7 : scene === "see" ? 0.65 : 0.23;
-    [x, y] = along(path, wrap(u + time * speed * pace));
+    const progress = wrap(u + time * speed * pace);
+    [x, y] = along(path, progress);
+    alpha *= edgeFade(progress);
     const jitter = scene === "touch" ? 0.005 : 0.022;
     x += (v - 0.5) * jitter * 0.3;
     y += (v - 0.5) * jitter + Math.sin(time * 0.2 + phase) * jitter * 0.18;
@@ -134,6 +140,7 @@ export class ParticleMorph {
   scene: Scene;
   layout: Layout;
   progress = 1;
+  flowTime = 0;
   weights: Record<Scene, number>;
   private from: Pose[];
   private fromWeights: Record<Scene, number>;
@@ -161,9 +168,14 @@ export class ParticleMorph {
 
   advance(time: number, still = false) {
     this.progress = still ? 1 : smooth((time - this.started) / MORPH_SECONDS);
+    // Hold the destination phase while assembling; a wrapping destination must
+    // never teleport a still-visible particle midway through a morph.
+    this.flowTime = still ? 0 : Number.isFinite(this.started)
+      ? this.started + Math.max(0, time - this.started - MORPH_SECONDS)
+      : time;
     for (const id of SCENES) this.weights[id] = this.fromWeights[id] + (Number(id === this.scene) - this.fromWeights[id]) * this.progress;
     for (let i = 0; i < this.seeds.length; i++) {
-      const target = sampleScene(this.scene, this.seeds[i], i, still ? 0 : time, this.layout);
+      const target = sampleScene(this.scene, this.seeds[i], i, this.flowTime, this.layout);
       const from = this.from[i], pose = this.poses[i];
       pose.x = from.x + (target.x - from.x) * this.progress;
       pose.y = from.y + (target.y - from.y) * this.progress;
