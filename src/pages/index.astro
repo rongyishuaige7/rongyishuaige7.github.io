@@ -196,7 +196,7 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#07090d" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={siteUrl} />
     <meta property="og:title" content="Rongyi Studio" />
@@ -220,9 +220,15 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
     <script is:inline>
-      // Hide reveal targets only when scripts run, and show everything again if motion never starts.
+      // Settle the theme before first paint, then hide reveal targets only once scripts run.
       document.documentElement.classList.add("js");
-      try { if (localStorage.getItem("rongyi-motion") === "paused") document.documentElement.classList.add("motion-paused"); } catch (error) { /* Storage may be blocked. */ }
+      try {
+        var saved = localStorage.getItem("rongyi-theme");
+        var light = saved === "light" || (saved !== "dark" && matchMedia("(prefers-color-scheme: light)").matches);
+        document.documentElement.dataset.theme = light ? "light" : "dark";
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.content = light ? "#f4f6f9" : "#07090d";
+      } catch (error) { /* Storage may be blocked; the CSS media query still picks a theme. */ }
       setTimeout(function () {
         if (!document.documentElement.classList.contains("motion-ready")) document.documentElement.classList.remove("js");
       }, 4000);
@@ -243,7 +249,13 @@ const lanes: Lane[] = ["carry", "see", "touch"];
         <a href="#log"><i aria-hidden="true"></i>更新</a>
       </nav>
       <div class="header-actions">
-        <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false" title="暂停页面动效"><span class="visually-hidden">暂停页面动效</span><svg viewBox="0 0 16 16" aria-hidden="true"><path class="icon-pause" d="M5 3.5v9M11 3.5v9" /><path class="icon-play" d="M5.5 3.5v9l7-4.5z" /></svg></button>
+        <button class="theme-toggle" type="button" data-theme-toggle title="切换到浅色模式">
+          <span class="visually-hidden">切换到浅色模式</span>
+          <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <g class="icon-sun"><circle cx="12" cy="12" r="4.3" /><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6" /></g>
+            <path class="icon-moon" d="M20.6 14.4A8.7 8.7 0 0 1 9.6 3.4a8.7 8.7 0 1 0 11 11Z" />
+          </svg>
+        </button>
         <a class="header-link" href="https://github.com/rongyishuaige7" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a>
       </div>
     </header>
@@ -521,8 +533,10 @@ const lanes: Lane[] = ["carry", "see", "touch"];
     <script>
       import { initStatusFreshness } from "../scripts/status-freshness";
       import { initMotion } from "../scripts/motion";
+      import { initTheme } from "../scripts/theme";
       initStatusFreshness();
       initMotion();
+      initTheme();
     </script>
   </body>
 </html>

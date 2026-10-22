@@ -8,8 +8,8 @@ export function initMotion() {
   const counters = new Map<HTMLElement, number>();
   const tiles = new Map<HTMLElement, Animation>();
   let disposed = false;
-  // Reduced motion and the page-wide pause both mean: show final states, run nothing on its own.
-  const still = () => preference.matches || root.classList.contains("motion-paused");
+  // Reduced motion means: show final states, run nothing on its own.
+  const still = () => preference.matches;
   const listen = { signal: events.signal };
   const format = new Intl.NumberFormat("zh-CN");
   const revealTargets = [...document.querySelectorAll<HTMLElement>(".reveal, [data-reveal]")];
@@ -266,42 +266,17 @@ export function initMotion() {
     });
   }, listen);
 
-  // Settling to still: final values, no in-flight motion. Shared by reduced motion and the page pause.
-  const settle = () => {
-    revealAll();
-    cancelTiles();
-    stopPreview();
-  };
-  const toggle = document.querySelector<HTMLButtonElement>("[data-motion-toggle]");
-  const syncToggle = () => {
-    const paused = root.classList.contains("motion-paused");
-    toggle?.setAttribute("aria-pressed", String(paused));
-    const label = paused ? "恢复页面动效" : "暂停页面动效";
-    if (toggle) {
-      toggle.title = label;
-      toggle.querySelector(".visually-hidden")!.textContent = label;
-    }
-  };
-  toggle?.addEventListener("click", () => {
-    const paused = root.classList.toggle("motion-paused");
-    try {
-      if (paused) localStorage.setItem("rongyi-motion", "paused");
-      else localStorage.removeItem("rongyi-motion");
-    } catch { /* The choice still applies to this page view. */ }
-    if (paused) settle();
-    syncToggle();
-    syncLoops();
-    syncRotation();
-  }, listen);
-  syncToggle();
-
   document.addEventListener("visibilitychange", () => {
     syncLoops();
     if (document.hidden) { finishCounters(); cancelTiles(); stopPreview(); }
     else if (mapVisible) preview();
   }, listen);
   preference.addEventListener("change", () => {
-    if (still()) settle();
+    if (still()) {
+      revealAll();
+      cancelTiles();
+      stopPreview();
+    }
     syncLoops();
     syncRotation();
   }, listen);
