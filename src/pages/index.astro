@@ -536,10 +536,13 @@ const lanes: Lane[] = ["carry", "see", "touch"];
       import { initMotion } from "../scripts/motion";
       import { initTheme } from "../scripts/theme";
       import { initParticleField } from "../scripts/particle-field";
+      import { initSectionState } from "../scripts/section-state";
       initStatusFreshness();
+      const disposeSections = initSectionState();
       initMotion();
       initTheme();
-      initParticleField();
+      const disposeParticles = initParticleField();
+      if (import.meta.hot) import.meta.hot.dispose(() => { disposeParticles?.(); disposeSections?.(); });
     </script>
   </body>
 </html>

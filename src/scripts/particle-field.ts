@@ -1,254 +1,206 @@
-// Ambient motes behind the page. Deterministic, theme-aware and still under reduced motion:
-// the field is atmosphere, never a layer the reader has to look through.
-type Mote = {
-  x: number;
-  y: number;
-  depth: number;
-  size: number;
-  speed: number;
-  phase: number;
-  lane: number;
-  alpha: number;
-  glow: boolean;
-};
+import { SCENES, ParticleMorph, along, clamp, structureFor, wrap, type Scene, type Vec } from "./particle-scenes";
+import { SECTION_EVENT } from "./section-state";
 
-const SEED = 0x5f3a91;
-const POINTER_RADIUS = 150;
-
-function mulberry32(seed: number) {
-  return function () {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const wrap = (value: number) => ((value % 1) + 1) % 1;
-const edgeFade = (unit: number) => Math.min(1, Math.min(unit, 1 - unit) / 0.08);
+type RGB = [number, number, number];
+type StickyBounds = { start: number; end: number; top: number };
+type ProtectedRect = { x: number; y: number; width: number; height: number; sticky?: StickyBounds; offset?: number };
+const PROTECT = [
+  "h1", "h2", "h3", "p", "dl", ".tags", ".project-links", ".entry-copy", ".entry-caption", ".entry-visual",
+  "img", "figure", "figcaption", ".pcb-strip", ".hw-filters", ".hw-evidence", ".hw-stack", ".hw-top", ".signal-panel", "time", ".tl-tags", ".tl-arrow", ".hw-more", "summary", ".button", ".text-link", ".status", ".signal-chip"
+].map(selector => `main ${selector}`).join(",");
 
 export function initParticleField() {
   const canvas = document.querySelector<HTMLCanvasElement>("[data-particle-field]");
   if (!canvas) return;
   const context = canvas.getContext("2d", { alpha: true });
   if (!context) return;
-
   const root = document.documentElement;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const phone = window.matchMedia("(max-width: 760px)");
-  const rng = mulberry32(SEED);
-
-  let motes: Mote[] = [];
-  let buckets: Array<{ color: string; motes: Mote[] }> = [];
-  let width = 1;
-  let height = 1;
-  let ratio = 1;
-  let frame = 0;
-  let last = 0;
-  let elapsed = 0;
-  let pending = 0;
-  let scrollY = window.scrollY || 0;
-  let scrollRange = 1;
-  let pointerX = -1e4;
-  let pointerY = -1e4;
-  let pointerOn = false;
-  let palette = { mote: "154,163,177", lanes: ["255,107,74", "110,168,255", "70,216,156"] };
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  const phone = matchMedia("(max-width: 760px)");
+  const events = new AbortController();
+  const listen = { signal: events.signal };
+  const layout = () => ({ mobile: phone.matches, count: reduce.matches ? (phone.matches ? 64 : 96) : phone.matches ? 156 : 300 });
+  const currentScene = (): Scene => SCENES.includes(root.dataset.section as Scene) ? root.dataset.section as Scene : "top";
+  const morph = new ParticleMorph(currentScene(), layout());
+  let width = 1, height = 1, ratio = 1, scroll = window.scrollY;
+  let frame = 0, measureFrame = 0, previous = 0, elapsed = 0, pending = 0;
+  let active = true, disposed = false;
+  let pointer: Vec | null = null;
+  let protectedRects: ProtectedRect[] = [];
+  let palette: RGB[] = [];
 
   const readPalette = () => {
-    const styles = getComputedStyle(root);
-    const token = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
-    palette = {
-      mote: token("--mote", "154,163,177"),
-      lanes: [token("--mote-1", "255,107,74"), token("--mote-2", "110,168,255"), token("--mote-3", "70,216,156")]
-    };
+    const css = getComputedStyle(root);
+    palette = ["--mote", "--mote-1", "--mote-2", "--mote-3"].map(token => css.getPropertyValue(token).trim().split(",").map(Number) as RGB);
   };
+  const colors = () => [0, 1, 2, 3].map(lane => {
+    const rgb: RGB = [0, 0, 0];
+    for (const scene of SCENES) {
+      const accent = scene === "carry" || scene === "proof" ? 1 : scene === "see" ? 2 : scene === "touch" ? 3 : lane;
+      const color = palette[lane === 0 || scene === "log" ? 0 : accent];
+      for (let channel = 0; channel < 3; channel++) rgb[channel] += color[channel] * morph.weights[scene];
+    }
+    return `rgb(${rgb.map(Math.round).join(",")})`;
+  });
 
-  const build = () => {
-    const count = reduceMotion.matches ? (phone.matches ? 40 : 60) : phone.matches ? 84 : 150;
-    motes = Array.from({ length: count }, () => {
-      const laneRoll = rng();
-      return {
-        x: rng(),
-        y: rng(),
-        depth: 0.3 + rng() * 0.7,
-        size: 0.6 + rng() * 1.5,
-        speed: 0.003 + rng() * 0.011,
-        phase: rng() * Math.PI * 2,
-        lane: laneRoll > 0.86 ? 1 + Math.floor(rng() * 3) : 0,
-        alpha: 0.2 + rng() * 0.42,
-        glow: rng() > 0.94
-      };
-    });
-    regroup();
-  };
-
-  // One fill style per lane: alpha rides on globalAlpha, so the loop builds no strings.
-  const regroup = () => {
-    buckets = [palette.mote, palette.lanes[0], palette.lanes[1], palette.lanes[2]].map((color, lane) => ({
-      color: `rgb(${color})`,
-      motes: motes.filter((mote) => mote.lane === lane)
-    }));
-  };
-
-  const resize = () => {
-    width = Math.max(1, window.innerWidth);
-    height = Math.max(1, window.innerHeight);
-    ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-    canvas.width = Math.floor(width * ratio);
-    canvas.height = Math.floor(height * ratio);
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    scrollRange = Math.max(1, document.documentElement.scrollHeight - height);
-  };
-
-  const draw = (time: number) => {
+  const draw = () => {
+    if (disposed || !active || document.hidden) return;
+    morph.setScene(currentScene(), layout(), elapsed);
+    morph.advance(elapsed, reduce.matches);
+    const ink = colors();
     context.clearRect(0, 0, width, height);
-    const depthScroll = scrollY / scrollRange;
-
-    for (const bucket of buckets) {
-      context.fillStyle = bucket.color;
-      for (const mote of bucket.motes) {
-        const wobble = Math.sin(time * 0.12 + mote.phase) * 0.012;
-        const drift = (time * mote.speed) % 1;
-        const nx = wrap(mote.x + wobble);
-        const ny = wrap(mote.y - drift - depthScroll * 0.06 * mote.depth);
-        let px = nx * width;
-        let py = ny * height;
-        let alpha = mote.alpha * edgeFade(ny) * (0.85 + 0.15 * Math.sin(time * 0.8 + mote.phase * 3));
-        let size = mote.size * (0.75 + mote.depth * 0.5);
-
-        if (pointerOn) {
-          const dx = px - pointerX;
-          const dy = py - pointerY;
-          const distanceSq = dx * dx + dy * dy;
-          if (distanceSq < POINTER_RADIUS * POINTER_RADIUS && distanceSq > 0.5) {
-            const distance = Math.sqrt(distanceSq);
-            const pull = 1 - distance / POINTER_RADIUS;
-            const push = pull * pull * 26 * (0.5 + mote.depth * 0.5);
-            px += (dx / distance) * push;
-            py += (dy / distance) * push;
-            alpha = Math.min(0.9, alpha * (1 + pull * 0.55));
-            size *= 1 + pull * 0.2;
-          }
-        }
-
-        if (mote.glow) {
-          context.globalAlpha = alpha * 0.13;
-          context.beginPath();
-          context.arc(px, py, size * 3.2, 0, Math.PI * 2);
-          context.fill();
-        }
-        context.globalAlpha = alpha;
-        // Sub-pixel motes read the same as squares and skip a path per point.
-        if (size < 1.4) context.fillRect(px - size, py - size, size * 2, size * 2);
-        else {
-          context.beginPath();
-          context.arc(px, py, size, 0, Math.PI * 2);
-          context.fill();
+    const point = (p: Vec): Vec => [p[0] * width, p[1] * height];
+    for (const scene of SCENES) {
+      const weight = morph.weights[scene];
+      if (weight < 0.005) continue;
+      const structure = structureFor(scene, phone.matches);
+      const accent = scene === "see" ? 2 : scene === "touch" ? 3 : 1;
+      context.strokeStyle = `rgb(${palette[scene === "log" ? 0 : accent].join(",")})`;
+      context.fillStyle = context.strokeStyle;
+      context.lineWidth = 0.8;
+      context.globalAlpha = weight * (scene === "log" ? 0.1 : 0.17);
+      for (const path of structure.tracks) {
+        context.beginPath();
+        path.points.forEach((p, i) => { const [x, y] = point(p); if (i === 0) context.moveTo(x, y); else context.lineTo(x, y); });
+        context.stroke();
+      }
+      for (const p of structure.anchors) {
+        const [x, y] = point(p);
+        context.globalAlpha = weight * 0.35;
+        context.beginPath(); context.arc(x, y, 3.2, 0, Math.PI * 2); context.stroke();
+        context.globalAlpha = weight * 0.55;
+        context.fillRect(x - 0.8, y - 0.8, 1.6, 1.6);
+      }
+      if (!reduce.matches && structure.tracks.length) {
+        context.globalAlpha = weight * 0.72;
+        for (let i = 0; i < structure.tracks.length; i += 2) {
+          const [x, y] = point(along(structure.tracks[i], wrap(elapsed * (scene === "carry" ? 0.06 : 0.035) + i * 0.19)));
+          context.beginPath(); context.arc(x, y, 1.8, 0, Math.PI * 2); context.fill();
         }
       }
     }
-    context.globalAlpha = 1;
-  };
-
-  const loop = (timestamp: number) => {
-    if (!last) last = timestamp;
-    const delta = Math.min(0.064, (timestamp - last) / 1000);
-    last = timestamp;
-    elapsed += delta;
-    // Dust drifts slowly; half the refresh rate keeps the field cheap without reading as stepped.
-    pending += delta;
-    if (pending >= 1 / 30) {
-      pending = 0;
-      draw(elapsed);
+    for (let lane = 0; lane < 4; lane++) {
+      context.fillStyle = ink[lane];
+      for (let i = 0; i < morph.layout.count; i++) {
+        const seed = morph.seeds[i];
+        if ((seed.accent && !seed.dust ? 1 + seed.group % 3 : 0) !== lane) continue;
+        const pose = morph.poses[i];
+        let x = pose.x * width, y = pose.y * height;
+        let alpha = pose.alpha;
+        if (pointer && !reduce.matches) {
+          const dx = x - pointer[0], dy = y - pointer[1], distance = Math.hypot(dx, dy);
+          if (distance > 0 && distance < 125) {
+            const influence = (1 - distance / 125) ** 2;
+            const push = influence * 15 * seed.depth;
+            x += dx / distance * push; y += dy / distance * push;
+            alpha *= 1 + influence * 0.25;
+          }
+        }
+        context.globalAlpha = clamp(alpha);
+        context.beginPath(); context.arc(x, y, pose.size, 0, Math.PI * 2); context.fill();
+      }
     }
-    if (!reduceMotion.matches && !document.hidden) frame = requestAnimationFrame(loop);
+    // Cached document coordinates: no layout reads in the drawing loop.
+    context.globalAlpha = 1;
+    context.globalCompositeOperation = "destination-out";
+    context.fillRect(0, 0, width, phone.matches ? 136 : 80);
+    for (const rect of protectedRects) {
+      const y = rect.sticky
+        ? Math.min(Math.max(rect.sticky.start - scroll, rect.sticky.top), rect.sticky.end - scroll) + (rect.offset ?? 0)
+        : rect.y - scroll;
+      if (y + rect.height < 0 || y > height) continue;
+      context.fillRect(rect.x, y, rect.width, rect.height);
+    }
+    context.globalCompositeOperation = "source-over";
+    canvas.dataset.scene = morph.scene;
+    canvas.dataset.particles = String(morph.layout.count);
   };
 
-  const start = () => {
-    if (frame || reduceMotion.matches || document.hidden) return;
-    last = 0;
-    frame = requestAnimationFrame(loop);
+  const measure = () => {
+    scroll = window.scrollY;
+    const stickyElement = document.querySelector<HTMLElement>(".proof-copy");
+    let sticky: StickyBounds | undefined;
+    let stickyY = 0;
+    if (stickyElement && getComputedStyle(stickyElement).position === "sticky") {
+      const parent = stickyElement.parentElement!;
+      const parentRect = parent.getBoundingClientRect(), parentStyle = getComputedStyle(parent);
+      const stickyRect = stickyElement.getBoundingClientRect();
+      stickyY = stickyRect.top;
+      sticky = {
+        start: parentRect.top + scroll + Number.parseFloat(parentStyle.paddingTop),
+        end: parentRect.bottom + scroll - Number.parseFloat(parentStyle.paddingBottom) - stickyRect.height,
+        top: Number.parseFloat(getComputedStyle(stickyElement).top)
+      };
+    }
+    protectedRects = [...document.querySelectorAll<HTMLElement>(PROTECT)].flatMap(el => {
+      if (el.hidden || !el.getClientRects().length) return [];
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return [];
+      return [{
+        x: rect.left - 5, y: rect.top + scroll - 4, width: rect.width + 10, height: rect.height + 8,
+        ...(sticky && stickyElement?.contains(el) ? { sticky, offset: rect.top - stickyY - 4 } : {})
+      }];
+    });
   };
-
-  const stop = () => {
-    if (!frame) return;
-    cancelAnimationFrame(frame);
+  const scheduleMeasure = () => {
+    if (measureFrame || !active || disposed || document.hidden) return;
+    measureFrame = requestAnimationFrame(() => { measureFrame = 0; measure(); if (reduce.matches) draw(); });
+  };
+  const resize = () => {
+    width = Math.max(1, innerWidth); height = Math.max(1, innerHeight);
+    ratio = Math.min(devicePixelRatio || 1, 1.5);
+    const w = Math.round(width * ratio), h = Math.round(height * ratio);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    scheduleMeasure();
+    if (reduce.matches) draw();
+  };
+  const tick = (timestamp: number) => {
     frame = 0;
+    if (!active || disposed || document.hidden || reduce.matches) return;
+    const delta = previous ? Math.min(0.1, (timestamp - previous) / 1000) : 0;
+    previous = timestamp; elapsed += delta; pending += delta;
+    if (pending >= 1 / 30) { pending %= 1 / 30; draw(); }
+    frame = requestAnimationFrame(tick);
   };
-
-  const settle = () => {
+  const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0; };
+  const sync = () => {
     stop();
-    if (reduceMotion.matches) draw(0);
+    if (!active || disposed || document.hidden) { canvas.dataset.state = "suspended"; return; }
+    draw();
+    canvas.dataset.state = reduce.matches ? "still" : "running";
+    if (!reduce.matches) frame = requestAnimationFrame(tick);
   };
-
-  const onResize = () => {
-    resize();
-    build();
-    if (reduceMotion.matches) draw(0);
+  const resizeObserver = new ResizeObserver(scheduleMeasure);
+  document.querySelectorAll("main > section").forEach(el => resizeObserver.observe(el));
+  const dispose = () => {
+    if (disposed) return;
+    stop(); disposed = true; active = false;
+    cancelAnimationFrame(measureFrame);
+    events.abort(); resizeObserver.disconnect();
+    canvas.dataset.state = "disposed";
   };
-  const onScroll = () => {
-    scrollY = window.scrollY || 0;
-    scrollRange = Math.max(1, document.documentElement.scrollHeight - height);
-    if (reduceMotion.matches) draw(0);
-  };
-  const onPointerMove = (event: PointerEvent) => {
-    pointerX = event.clientX;
-    pointerY = event.clientY;
-    pointerOn = true;
-  };
-  const onPointerLeave = () => {
-    pointerOn = false;
-    pointerX = -1e4;
-    pointerY = -1e4;
-  };
-  const onVisibility = () => {
-    if (document.hidden) stop();
-    else start();
-  };
-  const onMotionChange = () => {
-    settle();
-    start();
-  };
-  const onThemeChange = () => {
-    readPalette();
-    regroup();
-    if (reduceMotion.matches) draw(0);
-  };
-  const onPhoneChange = () => {
-    build();
-    if (reduceMotion.matches) draw(0);
-  };
-
-  readPalette();
-  resize();
-  build();
-  if (reduceMotion.matches) draw(0);
-  else start();
-
-  window.addEventListener("resize", onResize, { passive: true });
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("pointermove", onPointerMove, { passive: true });
-  window.addEventListener("pointerleave", onPointerLeave, { passive: true });
-  window.addEventListener("pointercancel", onPointerLeave, { passive: true });
-  document.addEventListener("visibilitychange", onVisibility);
-  document.addEventListener("rongyi:themechange", onThemeChange);
-  reduceMotion.addEventListener("change", onMotionChange);
-  phone.addEventListener("change", onPhoneChange);
-
-  window.addEventListener(
-    "pagehide",
-    () => {
-      stop();
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerleave", onPointerLeave);
-      window.removeEventListener("pointercancel", onPointerLeave);
-      document.removeEventListener("visibilitychange", onVisibility);
-      document.removeEventListener("rongyi:themechange", onThemeChange);
-      reduceMotion.removeEventListener("change", onMotionChange);
-      phone.removeEventListener("change", onPhoneChange);
-    },
-    { once: true }
-  );
+  window.addEventListener("scroll", () => { scroll = window.scrollY; if (reduce.matches) draw(); }, { ...listen, passive: true });
+  window.addEventListener("resize", resize, { ...listen, passive: true });
+  window.addEventListener("pointermove", event => { if (event.pointerType === "mouse") pointer = [event.clientX, event.clientY]; }, { ...listen, passive: true });
+  window.addEventListener("pointerout", event => { if (!event.relatedTarget) pointer = null; }, listen);
+  window.addEventListener("pointercancel", () => { pointer = null; }, listen);
+  document.addEventListener(SECTION_EVENT, () => { morph.setScene(currentScene(), layout(), elapsed); if (reduce.matches) draw(); }, listen);
+  document.addEventListener("rongyi:themechange", () => { readPalette(); if (reduce.matches) draw(); }, listen);
+  document.addEventListener("visibilitychange", () => { pointer = null; if (!document.hidden) scheduleMeasure(); sync(); }, listen);
+  reduce.addEventListener("change", sync, listen);
+  phone.addEventListener("change", () => { resize(); sync(); }, listen);
+  document.addEventListener("load", scheduleMeasure, { ...listen, capture: true });
+  document.addEventListener("transitionend", event => { if (event.propertyName === "transform" || event.propertyName === "height") scheduleMeasure(); }, listen);
+  document.addEventListener("animationend", scheduleMeasure, listen);
+  window.addEventListener("pagehide", event => {
+    active = false; pointer = null; stop();
+    cancelAnimationFrame(measureFrame); measureFrame = 0;
+    canvas.dataset.state = "suspended";
+    if (!event.persisted) dispose();
+  }, listen);
+  window.addEventListener("pageshow", () => { active = true; readPalette(); resize(); measure(); sync(); }, listen);
+  document.fonts.ready.then(() => { if (!disposed) scheduleMeasure(); });
+  readPalette(); resize(); measure(); sync();
+  return dispose;
 }

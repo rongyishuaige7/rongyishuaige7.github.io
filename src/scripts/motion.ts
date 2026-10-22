@@ -1,3 +1,5 @@
+import { SECTION_EVENT } from "./section-state";
+
 // Motion enhances the static document. Filtering semantics and final values are
 // committed first; observers and animations never own the underlying content.
 export function initMotion() {
@@ -173,35 +175,16 @@ export function initMotion() {
   cleanups.push(() => sentinel.remove());
 
   const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-lane-nav] a[href^='#']")];
-  const sections = [...new Set(links.map((link) => document.getElementById(link.hash.slice(1))))].filter((el): el is HTMLElement => el !== null);
-  let laneObserver: IntersectionObserver | undefined;
   const highlight = (id: string) => links.forEach((link) => {
     const active = link.hash === `#${id}`;
     link.classList.toggle("is-active", active);
     if (active) link.setAttribute("aria-current", "location");
     else link.removeAttribute("aria-current");
   });
-  const observeLanes = () => {
-    laneObserver?.disconnect();
-    const line = Math.floor(window.innerHeight * 0.45);
-    highlight(sections.find((section) => {
-      const rect = section.getBoundingClientRect();
-      return rect.top <= line && rect.bottom > line;
-    })?.id ?? "");
-    if (!("IntersectionObserver" in window)) return;
-    const active = new Set<Element>();
-    laneObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) active.add(entry.target);
-        else active.delete(entry.target);
-      });
-      highlight(sections.find((section) => active.has(section))?.id ?? "");
-    }, { rootMargin: `-${line}px 0px -${Math.max(0, window.innerHeight - line - 1)}px 0px` });
-    sections.forEach((section) => laneObserver?.observe(section));
-  };
-  observeLanes();
-  cleanups.push(() => laneObserver?.disconnect());
-  window.addEventListener("resize", () => { cancelTiles(); observeLanes(); }, listen);
+  const syncLane = () => highlight(root.dataset.section ?? "");
+  syncLane();
+  document.addEventListener(SECTION_EVENT, syncLane, listen);
+  window.addEventListener("resize", cancelTiles, listen);
 
   const bar = document.querySelector<HTMLElement>("[data-hw-filters]");
   const grid = document.querySelector<HTMLElement>(".hw-grid");

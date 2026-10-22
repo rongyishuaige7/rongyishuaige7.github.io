@@ -10,6 +10,7 @@
     "status": "node scripts/fetch-github-status.mjs && node scripts/fetch-studio-data.mjs",
     "status:check": "node scripts/check-github-status.mjs && node scripts/check-studio-data.mjs",
     "test": "node --test test/*.test.mjs",
+    "test:particles": "node scripts/check-particles.mjs",
     "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",
@@ -22,6 +23,7 @@
   "description": "Rongyi Studio — personal homepage of an independent developer and founder of Yi盘.",
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "playwright-core": "1.61.1",
     "typescript": "^6.0.3"
   }
 }
