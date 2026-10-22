@@ -16,7 +16,7 @@ const repositories = [
   { repo: "devflow-recorder", workflow: "ci.yml", scope: "Web 测试与构建" },
   { repo: "memory-monitor", workflow: "ci.yml", scope: "扩展检查" },
   { repo: "pet-desktop-tauri", workflow: "ci.yml", scope: "Web 测试与构建" },
-  { repo: "hardware-lab", workflow: "validate.yml", scope: "索引检查" },
+  { repo: "YI-Hardware-Lab", workflow: "validate.yml", scope: "索引检查" },
   { repo: "ESP32_RPS_Game", workflow: "ci.yml", scope: "固件构建", artifacts: true }
 ];
 

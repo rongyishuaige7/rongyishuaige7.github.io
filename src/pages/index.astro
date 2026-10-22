@@ -135,7 +135,7 @@ const hardwareProjects = studio.hardware.projects
   .sort((a, b) => hardwareRank(a.project.slug) - hardwareRank(b.project.slug) || a.index - b.index)
   .map(({ project }) => project);
 const heroDeck = hardwareHeroDeck.map(hardwarePhoto).filter((photo) => photo !== null);
-const hardwareSignal = primarySignal("hardware-lab");
+const hardwareSignal = primarySignal("YI-Hardware-Lab");
 const verifiedHardware = hardwareProjects.filter((project) => project.evidence?.status === "verified").length;
 const hardwareEvidenceLabel: Record<string, string> = { verified: "当前提交构建通过", failure: "当前提交构建未通过", running: "当前提交构建中", unverified: "当前提交未核验", unknown: "构建证据暂不可确认" };
 const hardwareFilters = [
@@ -164,7 +164,7 @@ const signalKindLabel: Record<DisplaySignal["kind"], string> = { release: "发�
 const proofGroups: Array<{ lane: Lane; items: Array<{ slug: string; name: string; href: string }> }> = [
   { lane: "carry", items: [{ slug: yipan.slug, name: yipan.name, href: yipan.href }] },
   { lane: "see", items: [{ slug: dshUsage.slug, name: dshUsage.name, href: dshUsage.href }, ...toolGroups.flatMap((group) => group.tools.map((tool) => ({ slug: tool.slug, name: tool.name, href: tool.href })))] },
-  { lane: "touch", items: [{ slug: "hardware-lab", name: "Hardware Lab 索引", href: "https://github.com/rongyishuaige7/hardware-lab" }, { slug: "ESP32_RPS_Game", name: "ESP32 RPS Game", href: "https://github.com/rongyishuaige7/ESP32_RPS_Game" }] }
+  { lane: "touch", items: [{ slug: "YI-Hardware-Lab", name: "Hardware Lab 索引", href: "https://github.com/rongyishuaige7/YI-Hardware-Lab" }, { slug: "ESP32_RPS_Game", name: "ESP32 RPS Game", href: "https://github.com/rongyishuaige7/ESP32_RPS_Game" }] }
 ];
 function proofRows(item: { slug: string; name: string; href: string }) {
   const signals = evidenceSignals(item.slug);

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T05:37:07.742Z",
+  "generatedAt": "2026-10-22T02:02:58.670Z",
   "source": "GitHub REST API + npm registry",
   "sources": {
     "publicRepos": {
@@ -26,10 +26,10 @@
   },
   "npm": {
     "@rongyi7/dsh-stats": {
-      "latest": "0.4.3",
-      "publishedAt": "2026-10-15T10:01:10.869Z",
-      "versionCount": 94,
-      "versionsLast30Days": 3,
+      "latest": "0.5.0",
+      "publishedAt": "2026-10-21T13:57:57.200Z",
+      "versionCount": 95,
+      "versionsLast30Days": 4,
       "downloadsStatus": "ok",
       "downloadsLastMonth": 1031,
       "downloadsWindow": {
@@ -54,8 +54,8 @@
   },
   "hardware": {
     "status": "ok",
-    "indexUrl": "https://github.com/rongyishuaige7/hardware-lab",
-    "statusDate": "2026-10-20",
+    "indexUrl": "https://github.com/rongyishuaige7/YI-Hardware-Lab",
+    "statusDate": "2026-10-21",
     "listed": 22,
     "projects": [
       {
@@ -294,15 +294,15 @@
         "family": "rpi",
         "chip": "Raspberry Pi",
         "summary": "树莓派采集 DHT22 温湿度与 BH1750 光照，写入 MySQL，经 Flask REST API 供 Avalonia / C# 上位机查看、查询历史和维护阈值的教学原型。",
-        "mediaScope": "公开三张已去元数据并按需遮盖终端用户名、路径和私网地址的 2026-04-07 历史界面/日志截图；未公开实物照片、演示视频或 EDA/制造文件。",
+        "mediaScope": "公开三张已去元数据并按需遮盖终端用户名、登录用户名、路径和私网地址的 2026-04-07 历史界面/日志截图；未公开实物照片、演示视频或 EDA/制造文件。",
         "evidence": {
           "status": "verified",
-          "indexedSha": "108eb73c02961bd943bc47e4d48e9fb1c9427b54",
-          "headSha": "108eb73c02961bd943bc47e4d48e9fb1c9427b54",
+          "indexedSha": "29e4c26b80bef30cb2c2fa5a97c601b1a4c02510",
+          "headSha": "29e4c26b80bef30cb2c2fa5a97c601b1a4c02510",
           "defaultBranch": "main",
           "workflow": ".github/workflows/validate.yml",
-          "runUrl": "https://github.com/rongyishuaige7/raspberry-pi-weather-station/actions/runs/38683323688",
-          "runAt": "2026-10-15T04:47:33Z"
+          "runUrl": "https://github.com/rongyishuaige7/raspberry-pi-weather-station/actions/runs/39540791433",
+          "runAt": "2026-10-21T03:50:41Z"
         }
       },
       {
@@ -480,20 +480,28 @@
   },
   "updates": [
     {
-      "date": "2026-10-20T00:00:00.000Z",
+      "date": "2026-10-21T13:59:09Z",
+      "lane": "see",
+      "type": "RELEASE",
+      "title": "0.5.0",
+      "text": "dsh-stats 发布 v0.5.0。",
+      "href": "https://github.com/rongyishuaige7/dsh-stats/releases/tag/v0.5.0"
+    },
+    {
+      "date": "2026-10-21T13:57:57.200Z",
+      "lane": "see",
+      "type": "NPM",
+      "title": "@rongyi7/dsh-stats 0.5.0",
+      "text": "npm 上共 95 个版本，近 30 天发布 4 个版本。",
+      "href": "https://www.npmjs.com/package/@rongyi7/dsh-stats"
+    },
+    {
+      "date": "2026-10-21T00:00:00.000Z",
       "lane": "touch",
       "type": "INDEX",
       "title": "Hardware Lab 收录 22 个公开项目",
       "text": "ESP32、STM32、树莓派与 Arduino 原型统一核对默认分支、提交与固定 Actions 链接。",
-      "href": "https://github.com/rongyishuaige7/hardware-lab"
-    },
-    {
-      "date": "2026-10-15T10:01:10.869Z",
-      "lane": "see",
-      "type": "NPM",
-      "title": "@rongyi7/dsh-stats 0.4.3",
-      "text": "npm 上共 94 个版本，近 30 天发布 3 个版本。",
-      "href": "https://www.npmjs.com/package/@rongyi7/dsh-stats"
+      "href": "https://github.com/rongyishuaige7/YI-Hardware-Lab"
     },
     {
       "date": "2026-08-15T12:56:44.728Z",

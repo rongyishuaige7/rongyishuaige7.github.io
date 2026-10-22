@@ -9,8 +9,8 @@ const retryDelaysMs = [500, 1_500];
 
 const npmPackages = ["@rongyi7/dsh-stats", "@rongyi7/dsh-spec"];
 // Only these public repositories may contribute release entries to the update feed.
-const releaseRepos = ["problem-solution-recorder-oss", "ningque", "dsh-stats", "dsh-spec", "memory-monitor", "tech-mentor", "devflow-recorder", "pet-desktop-tauri", "hardware-lab"];
-const releaseLanes = { "hardware-lab": "touch" };
+const releaseRepos = ["problem-solution-recorder-oss", "ningque", "dsh-stats", "dsh-spec", "memory-monitor", "tech-mentor", "devflow-recorder", "pet-desktop-tauri", "YI-Hardware-Lab"];
+const releaseLanes = { "YI-Hardware-Lab": "touch" };
 
 const token = process.env.GITHUB_TOKEN;
 const githubHeaders = {
@@ -97,10 +97,10 @@ for (const name of npmPackages) {
 }
 sources.npm = { status: npmFailures.length === npmPackages.length ? "unknown" : npmFailures.length || downloadFailures.length ? "partial" : "ok", failed: npmFailures, downloadsFailed: downloadFailures };
 
-let hardware = { status: "unknown", indexUrl: `https://github.com/${owner}/hardware-lab`, projects: [] };
+let hardware = { status: "unknown", indexUrl: `https://github.com/${owner}/YI-Hardware-Lab`, projects: [] };
 if (publicRepos) {
   try {
-    const file = await github(`/repos/${owner}/hardware-lab/contents/projects.yml`);
+    const file = await github(`/repos/${owner}/YI-Hardware-Lab/contents/projects.yml`);
     const index = JSON.parse(Buffer.from(file.content, "base64").toString("utf8"));
     const indexed = (index.projects ?? []).filter((project) => publicRepos.has(String(project.repo ?? "").split("/").pop()) && isOwnedPublicHref(project.repo, owner));
     // Four workers bound API pressure; output order remains the curated index order.

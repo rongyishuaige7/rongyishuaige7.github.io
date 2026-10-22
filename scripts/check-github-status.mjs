@@ -15,7 +15,7 @@ const requiredRepositories = [
   "devflow-recorder",
   "memory-monitor",
   "pet-desktop-tauri",
-  "hardware-lab",
+  "YI-Hardware-Lab",
   "ESP32_RPS_Game"
 ];
 
