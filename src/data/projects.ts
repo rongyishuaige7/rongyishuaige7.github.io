@@ -95,10 +95,10 @@ export const toolGroups: ToolGroup[] = [
       {
         slug: "pet-desktop-tauri",
         name: "Desktop Pet",
-        summary: "Linux 桌面宠物原型，使用 Tauri、Rust 与 GTK。",
-        tags: ["Tauri", "Rust", "GTK"],
+        summary: "Linux / macOS 桌面宠物：Tauri + Rust 原生窗口，内置奶蛙六动作帧包。",
+        tags: ["Tauri", "Rust", "AppKit", "GTK"],
         href: "https://github.com/rongyishuaige7/pet-desktop-tauri",
-        caveat: "原生宠物窗口只支持 Linux。"
+        caveat: "Windows 暂无原生宠物窗口；macOS 构建尚未公证。"
       }
     ]
   }
@@ -109,7 +109,7 @@ export const toolGroups: ToolGroup[] = [
 export const toolShots: Record<string, { alt: string; label: string; fit?: "contain"; position?: string }> = {
   ningque: { alt: "宁缺第 001 号判词分享图：正文的骨头，正式承认 Source Han Sans SC 2.005R", label: "001 号判词分享图", fit: "contain" },
   "devflow-recorder": { alt: "DevFlow Recorder 浏览器预览界面：今天的开发轨迹与活动时间线，条目标注为示例数据", label: "浏览器预览 · 示例数据", position: "0 0" },
-  "pet-desktop-tauri": { alt: "Desktop Pet 工作室浏览器预览：动作舞台上的小猫“奶茶”，使用模拟帧包", label: "浏览器预览 · 模拟帧包" },
+  "pet-desktop-tauri": { alt: "Desktop Pet 陪伴页：三维小奶蛙站在动作预览区，页面标注为网页演示模式", label: "浏览器预览 · 内置奶蛙帧包" },
   "problem-solution-recorder-oss": { alt: "Problem Solution Recorder 看板：左侧筛选、中间记录列表、右侧记录详情，展示 7 条虚构示例记录", label: "看板 · 示例数据" },
   "macos-memory-monitor": { alt: "Memory Monitor 主窗口内存状态页：75% 使用率仪表、最近一小时趋势，以及可用内存、系统保留、已压缩、磁盘交换四项读数", label: "主窗口 · 演示数据" }
 };
