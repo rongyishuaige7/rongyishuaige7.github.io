@@ -45,13 +45,6 @@ export const toolGroups: ToolGroup[] = [
     label: "AGENT 工作流",
     tools: [
       {
-        slug: "dsh-spec",
-        name: "dsh-spec",
-        summary: "DSH 插件：编写需求与设计、按规格实现、验收。",
-        tags: ["DSH Plugin", "Spec", "npm"],
-        href: "https://github.com/rongyishuaige7/dsh-spec"
-      },
-      {
         slug: "tech-mentor-studio",
         name: "Tech Mentor Studio",
         summary: "本地工作台：读仓库、提交和未提交改动，按架构意图、流转图、源码解剖和暗坑四个阶段带读。",

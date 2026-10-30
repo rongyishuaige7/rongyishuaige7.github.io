@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T03:33:13.756Z",
+  "generatedAt": "2026-10-30T07:01:04.501Z",
   "source": "GitHub REST API + npm registry",
   "sources": {
     "publicRepos": {
@@ -37,19 +37,6 @@
         "end": "2026-10-28"
       },
       "url": "https://www.npmjs.com/package/@rongyi7/dsh-stats"
-    },
-    "@rongyi7/dsh-spec": {
-      "latest": "0.1.0",
-      "publishedAt": "2026-08-15T12:56:44.728Z",
-      "versionCount": 1,
-      "versionsLast30Days": 0,
-      "downloadsStatus": "ok",
-      "downloadsLastMonth": 59,
-      "downloadsWindow": {
-        "start": "2026-09-29",
-        "end": "2026-10-28"
-      },
-      "url": "https://www.npmjs.com/package/@rongyi7/dsh-spec"
     }
   },
   "hardware": {
@@ -502,14 +489,6 @@
       "title": "Hardware Lab 收录 22 个公开项目",
       "text": "ESP32、STM32、树莓派与 Arduino 原型统一核对默认分支、提交与固定 Actions 链接。",
       "href": "https://github.com/rongyishuaige7/YI-Hardware-Lab"
-    },
-    {
-      "date": "2026-08-15T12:56:44.728Z",
-      "lane": "see",
-      "type": "NPM",
-      "title": "@rongyi7/dsh-spec 0.1.0",
-      "text": "npm 上共 1 个版本。",
-      "href": "https://www.npmjs.com/package/@rongyi7/dsh-spec"
     },
     {
       "date": "2026-07-16T15:52:36Z",

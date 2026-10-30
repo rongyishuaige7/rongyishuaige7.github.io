@@ -8,7 +8,6 @@ const now = Date.now();
 const requiredRepositories = [
   "yipan-showcase",
   "dsh-stats",
-  "dsh-spec",
   "tech-mentor-studio",
   "problem-solution-recorder-oss",
   "ningque",

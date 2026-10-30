@@ -9,7 +9,6 @@ const retryDelaysMs = [500, 1_500];
 const repositories = [
   { repo: "yipan-showcase" },
   { repo: "dsh-stats", workflow: "ci.yml", scope: "插件检查" },
-  { repo: "dsh-spec" },
   { repo: "tech-mentor-studio", workflow: "ci.yml", scope: "检查、测试与浏览器回归" },
   { repo: "problem-solution-recorder-oss", workflow: "validate.yml", scope: "Skill 检查" },
   { repo: "ningque" },

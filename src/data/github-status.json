@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T03:32:33.539Z",
+  "generatedAt": "2026-10-30T07:00:25.039Z",
   "evidencePolicy": "current-default-branch-head",
   "source": "GitHub REST API",
   "repositories": {
@@ -30,45 +30,25 @@
       "license": "MIT",
       "language": "JavaScript",
       "defaultBranch": "main",
-      "headSha": "5e607087d8f0f7454abe4f78c57ea5fea8459a25",
-      "headCommittedAt": "2026-10-30T00:00:38Z",
-      "pushedAt": "2026-10-30T00:00:40Z",
+      "headSha": "2d015b1e9dd61fa365fd005dcd0df743f237d220",
+      "headCommittedAt": "2026-10-30T06:06:03Z",
+      "pushedAt": "2026-10-30T06:06:04Z",
       "ci": {
         "status": "completed",
         "conclusion": "success",
         "workflow": ".github/workflows/ci.yml",
         "scope": "插件检查",
         "event": "workflow_dispatch",
-        "url": "https://github.com/rongyishuaige7/dsh-stats/actions/runs/40976906052",
-        "headSha": "5e607087d8f0f7454abe4f78c57ea5fea8459a25",
-        "runAt": "2026-10-30T00:00:41Z",
-        "ageHours": 3.5
+        "url": "https://github.com/rongyishuaige7/dsh-stats/actions/runs/41012106956",
+        "headSha": "2d015b1e9dd61fa365fd005dcd0df743f237d220",
+        "runAt": "2026-10-30T06:06:06Z",
+        "ageHours": 0.9
       },
       "release": {
         "status": "available",
         "tag": "v0.5.1",
         "publishedAt": "2026-10-23T13:24:23Z",
         "url": "https://github.com/rongyishuaige7/dsh-stats/releases/tag/v0.5.1"
-      },
-      "artifact": {
-        "status": "not_configured"
-      }
-    },
-    "dsh-spec": {
-      "repo": "dsh-spec",
-      "url": "https://github.com/rongyishuaige7/dsh-spec",
-      "description": null,
-      "license": "MIT",
-      "language": "JavaScript",
-      "defaultBranch": "main",
-      "headSha": "85d031c9de11f228cb690a4e389256d9bb6dd2fc",
-      "headCommittedAt": "2026-08-15T13:00:31Z",
-      "pushedAt": "2026-08-15T13:01:46Z",
-      "ci": {
-        "status": "not_configured"
-      },
-      "release": {
-        "status": "none"
       },
       "artifact": {
         "status": "not_configured"
@@ -93,7 +73,7 @@
         "url": "https://github.com/rongyishuaige7/tech-mentor-studio/actions/runs/40997788316",
         "headSha": "5f0062992669bc33d091b434e02c5b956f3e72e9",
         "runAt": "2026-10-30T03:30:43Z",
-        "ageHours": 0
+        "ageHours": 3.5
       },
       "release": {
         "status": "none"
@@ -121,7 +101,7 @@
         "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/actions/runs/40901602644",
         "headSha": "336fa402f7ac7271f7e71d86fcd3cb9978650196",
         "runAt": "2026-10-29T16:07:17Z",
-        "ageHours": 11.4
+        "ageHours": 14.9
       },
       "release": {
         "status": "available",
@@ -175,7 +155,7 @@
         "url": "https://github.com/rongyishuaige7/devflow-recorder/actions/runs/29339471902",
         "headSha": "978f8739946e506fd1c5867c93465493a64a1e7e",
         "runAt": "2026-07-14T14:07:52Z",
-        "ageHours": 2581.4
+        "ageHours": 2584.9
       },
       "release": {
         "status": "none"
@@ -203,7 +183,7 @@
         "url": "https://github.com/rongyishuaige7/memory-monitor/actions/runs/30213179885",
         "headSha": "2f21751b2f1d74921f61cda1c3427efe3cef568d",
         "runAt": "2026-07-26T17:43:30Z",
-        "ageHours": 2289.8
+        "ageHours": 2293.3
       },
       "release": {
         "status": "none"
@@ -231,7 +211,7 @@
         "url": "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/40907698908",
         "headSha": "2e7605fabdd8763f5dfd8d1fc682235bd833d743",
         "runAt": "2026-10-29T16:03:04Z",
-        "ageHours": 11.5
+        "ageHours": 15
       },
       "release": {
         "status": "none"
@@ -256,10 +236,10 @@
         "workflow": ".github/workflows/validate.yml",
         "scope": "索引检查",
         "event": "schedule",
-        "url": "https://github.com/rongyishuaige7/YI-Hardware-Lab/actions/runs/40969704194",
+        "url": "https://github.com/rongyishuaige7/YI-Hardware-Lab/actions/runs/41013916727",
         "headSha": "3e3a920db8c93772f432d0ee84579b4518b5b562",
-        "runAt": "2026-10-29T22:57:26Z",
-        "ageHours": 4.6
+        "runAt": "2026-10-30T06:24:42Z",
+        "ageHours": 0.6
       },
       "release": {
         "status": "none"
@@ -287,7 +267,7 @@
         "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29669939600",
         "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
         "runAt": "2026-07-19T02:16:22Z",
-        "ageHours": 2473.3
+        "ageHours": 2476.7
       },
       "release": {
         "status": "none"
