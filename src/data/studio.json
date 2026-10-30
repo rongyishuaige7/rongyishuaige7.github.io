@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-22T02:02:58.670Z",
+  "generatedAt": "2026-10-30T03:33:13.756Z",
   "source": "GitHub REST API + npm registry",
   "sources": {
     "publicRepos": {
       "status": "ok",
-      "count": 43
+      "count": 46
     },
     "npm": {
       "status": "ok",
@@ -26,15 +26,15 @@
   },
   "npm": {
     "@rongyi7/dsh-stats": {
-      "latest": "0.5.0",
-      "publishedAt": "2026-10-21T13:57:57.200Z",
-      "versionCount": 95,
+      "latest": "0.5.2",
+      "publishedAt": "2026-10-28T10:49:16.675Z",
+      "versionCount": 97,
       "versionsLast30Days": 4,
       "downloadsStatus": "ok",
-      "downloadsLastMonth": 1031,
+      "downloadsLastMonth": 1215,
       "downloadsWindow": {
-        "start": "2026-09-19",
-        "end": "2026-10-18"
+        "start": "2026-09-29",
+        "end": "2026-10-28"
       },
       "url": "https://www.npmjs.com/package/@rongyi7/dsh-stats"
     },
@@ -44,10 +44,10 @@
       "versionCount": 1,
       "versionsLast30Days": 0,
       "downloadsStatus": "ok",
-      "downloadsLastMonth": 56,
+      "downloadsLastMonth": 59,
       "downloadsWindow": {
-        "start": "2026-09-19",
-        "end": "2026-10-18"
+        "start": "2026-09-29",
+        "end": "2026-10-28"
       },
       "url": "https://www.npmjs.com/package/@rongyi7/dsh-spec"
     }
@@ -480,20 +480,20 @@
   },
   "updates": [
     {
-      "date": "2026-10-21T13:59:09Z",
-      "lane": "see",
-      "type": "RELEASE",
-      "title": "0.5.0",
-      "text": "dsh-stats 发布 v0.5.0。",
-      "href": "https://github.com/rongyishuaige7/dsh-stats/releases/tag/v0.5.0"
-    },
-    {
-      "date": "2026-10-21T13:57:57.200Z",
+      "date": "2026-10-28T10:49:16.675Z",
       "lane": "see",
       "type": "NPM",
-      "title": "@rongyi7/dsh-stats 0.5.0",
-      "text": "npm 上共 95 个版本，近 30 天发布 4 个版本。",
+      "title": "@rongyi7/dsh-stats 0.5.2",
+      "text": "npm 上共 97 个版本，近 30 天发布 4 个版本。",
       "href": "https://www.npmjs.com/package/@rongyi7/dsh-stats"
+    },
+    {
+      "date": "2026-10-23T13:24:23Z",
+      "lane": "see",
+      "type": "RELEASE",
+      "title": "0.5.1",
+      "text": "dsh-stats 发布 v0.5.1。",
+      "href": "https://github.com/rongyishuaige7/dsh-stats/releases/tag/v0.5.1"
     },
     {
       "date": "2026-10-21T00:00:00.000Z",

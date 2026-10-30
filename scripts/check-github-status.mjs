@@ -9,7 +9,7 @@ const requiredRepositories = [
   "yipan-showcase",
   "dsh-stats",
   "dsh-spec",
-  "tech-mentor",
+  "tech-mentor-studio",
   "problem-solution-recorder-oss",
   "ningque",
   "devflow-recorder",

@@ -9,7 +9,7 @@ const retryDelaysMs = [500, 1_500];
 
 const npmPackages = ["@rongyi7/dsh-stats", "@rongyi7/dsh-spec"];
 // Only these public repositories may contribute release entries to the update feed.
-const releaseRepos = ["problem-solution-recorder-oss", "ningque", "dsh-stats", "dsh-spec", "memory-monitor", "tech-mentor", "devflow-recorder", "pet-desktop-tauri", "YI-Hardware-Lab"];
+const releaseRepos = ["problem-solution-recorder-oss", "ningque", "dsh-stats", "dsh-spec", "memory-monitor", "tech-mentor-studio", "devflow-recorder", "pet-desktop-tauri", "YI-Hardware-Lab"];
 const releaseLanes = { "YI-Hardware-Lab": "touch" };
 
 const token = process.env.GITHUB_TOKEN;

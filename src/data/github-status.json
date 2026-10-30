@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T02:02:06.360Z",
+  "generatedAt": "2026-10-30T03:32:33.539Z",
   "evidencePolicy": "current-default-branch-head",
   "source": "GitHub REST API",
   "repositories": {
@@ -30,25 +30,25 @@
       "license": "MIT",
       "language": "JavaScript",
       "defaultBranch": "main",
-      "headSha": "01f4af2953b3739c4973780cf876debdf515474b",
-      "headCommittedAt": "2026-10-22T01:37:21Z",
-      "pushedAt": "2026-10-22T01:37:43Z",
+      "headSha": "5e607087d8f0f7454abe4f78c57ea5fea8459a25",
+      "headCommittedAt": "2026-10-30T00:00:38Z",
+      "pushedAt": "2026-10-30T00:00:40Z",
       "ci": {
         "status": "completed",
-        "conclusion": "failure",
+        "conclusion": "success",
         "workflow": ".github/workflows/ci.yml",
         "scope": "插件检查",
-        "event": "push",
-        "url": "https://github.com/rongyishuaige7/dsh-stats/actions/runs/39706782749",
-        "headSha": "01f4af2953b3739c4973780cf876debdf515474b",
-        "runAt": "2026-10-22T01:37:45Z",
-        "ageHours": 0.4
+        "event": "workflow_dispatch",
+        "url": "https://github.com/rongyishuaige7/dsh-stats/actions/runs/40976906052",
+        "headSha": "5e607087d8f0f7454abe4f78c57ea5fea8459a25",
+        "runAt": "2026-10-30T00:00:41Z",
+        "ageHours": 3.5
       },
       "release": {
         "status": "available",
-        "tag": "v0.5.0",
-        "publishedAt": "2026-10-21T13:59:09Z",
-        "url": "https://github.com/rongyishuaige7/dsh-stats/releases/tag/v0.5.0"
+        "tag": "v0.5.1",
+        "publishedAt": "2026-10-23T13:24:23Z",
+        "url": "https://github.com/rongyishuaige7/dsh-stats/releases/tag/v0.5.1"
       },
       "artifact": {
         "status": "not_configured"
@@ -74,18 +74,26 @@
         "status": "not_configured"
       }
     },
-    "tech-mentor": {
-      "repo": "tech-mentor",
-      "url": "https://github.com/rongyishuaige7/tech-mentor",
-      "description": "Deep technical mentor & architectural walkthrough skill for AI-generated code in Antigravity (agy)",
+    "tech-mentor-studio": {
+      "repo": "tech-mentor-studio",
+      "url": "https://github.com/rongyishuaige7/tech-mentor-studio",
+      "description": "Local-first workbench that walks you through a repo, its commits and diffs: architecture intent, flow, code anatomy and pitfalls, with clickable file:line references.",
       "license": "MIT",
-      "language": "Shell",
+      "language": "JavaScript",
       "defaultBranch": "main",
-      "headSha": "b537120f236013c7866af6905e40b9959cae00e3",
-      "headCommittedAt": "2026-10-09T10:02:47Z",
-      "pushedAt": "2026-10-09T10:04:04Z",
+      "headSha": "5f0062992669bc33d091b434e02c5b956f3e72e9",
+      "headCommittedAt": "2026-10-30T03:30:38Z",
+      "pushedAt": "2026-10-30T03:30:41Z",
       "ci": {
-        "status": "not_configured"
+        "status": "completed",
+        "conclusion": "success",
+        "workflow": ".github/workflows/ci.yml",
+        "scope": "检查、测试与浏览器回归",
+        "event": "push",
+        "url": "https://github.com/rongyishuaige7/tech-mentor-studio/actions/runs/40997788316",
+        "headSha": "5f0062992669bc33d091b434e02c5b956f3e72e9",
+        "runAt": "2026-10-30T03:30:43Z",
+        "ageHours": 0
       },
       "release": {
         "status": "none"
@@ -101,19 +109,19 @@
       "license": "MIT",
       "language": "Shell",
       "defaultBranch": "main",
-      "headSha": "4c54b1aa9d001eb9f192b988281d5c24d322783a",
-      "headCommittedAt": "2026-07-14T14:07:43Z",
-      "pushedAt": "2026-07-19T00:22:21Z",
+      "headSha": "336fa402f7ac7271f7e71d86fcd3cb9978650196",
+      "headCommittedAt": "2026-10-29T15:26:23Z",
+      "pushedAt": "2026-10-29T15:26:33Z",
       "ci": {
         "status": "completed",
         "conclusion": "success",
         "workflow": ".github/workflows/validate.yml",
         "scope": "Skill 检查",
         "event": "push",
-        "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/actions/runs/29339468636",
-        "headSha": "4c54b1aa9d001eb9f192b988281d5c24d322783a",
-        "runAt": "2026-07-14T14:07:49Z",
-        "ageHours": 2387.9
+        "url": "https://github.com/rongyishuaige7/problem-solution-recorder-oss/actions/runs/40901602644",
+        "headSha": "336fa402f7ac7271f7e71d86fcd3cb9978650196",
+        "runAt": "2026-10-29T16:07:17Z",
+        "ageHours": 11.4
       },
       "release": {
         "status": "available",
@@ -167,7 +175,7 @@
         "url": "https://github.com/rongyishuaige7/devflow-recorder/actions/runs/29339471902",
         "headSha": "978f8739946e506fd1c5867c93465493a64a1e7e",
         "runAt": "2026-07-14T14:07:52Z",
-        "ageHours": 2387.9
+        "ageHours": 2581.4
       },
       "release": {
         "status": "none"
@@ -195,7 +203,7 @@
         "url": "https://github.com/rongyishuaige7/memory-monitor/actions/runs/30213179885",
         "headSha": "2f21751b2f1d74921f61cda1c3427efe3cef568d",
         "runAt": "2026-07-26T17:43:30Z",
-        "ageHours": 2096.3
+        "ageHours": 2289.8
       },
       "release": {
         "status": "none"
@@ -211,19 +219,19 @@
       "license": "MIT",
       "language": "TypeScript",
       "defaultBranch": "main",
-      "headSha": "188d46ffe90068197845d18cc7dc1ab11bb34e67",
-      "headCommittedAt": "2026-10-21T17:29:32Z",
-      "pushedAt": "2026-10-21T17:29:46Z",
+      "headSha": "2e7605fabdd8763f5dfd8d1fc682235bd833d743",
+      "headCommittedAt": "2026-10-29T16:02:35Z",
+      "pushedAt": "2026-10-29T16:03:01Z",
       "ci": {
         "status": "completed",
         "conclusion": "success",
         "workflow": ".github/workflows/ci.yml",
         "scope": "Web 测试与构建",
         "event": "push",
-        "url": "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/39644295723",
-        "headSha": "188d46ffe90068197845d18cc7dc1ab11bb34e67",
-        "runAt": "2026-10-21T17:29:48Z",
-        "ageHours": 8.5
+        "url": "https://github.com/rongyishuaige7/pet-desktop-tauri/actions/runs/40907698908",
+        "headSha": "2e7605fabdd8763f5dfd8d1fc682235bd833d743",
+        "runAt": "2026-10-29T16:03:04Z",
+        "ageHours": 11.5
       },
       "release": {
         "status": "none"
@@ -248,10 +256,10 @@
         "workflow": ".github/workflows/validate.yml",
         "scope": "索引检查",
         "event": "schedule",
-        "url": "https://github.com/rongyishuaige7/YI-Hardware-Lab/actions/runs/39682972114",
+        "url": "https://github.com/rongyishuaige7/YI-Hardware-Lab/actions/runs/40969704194",
         "headSha": "3e3a920db8c93772f432d0ee84579b4518b5b562",
-        "runAt": "2026-10-21T21:58:15Z",
-        "ageHours": 4.1
+        "runAt": "2026-10-29T22:57:26Z",
+        "ageHours": 4.6
       },
       "release": {
         "status": "none"
@@ -279,7 +287,7 @@
         "url": "https://github.com/rongyishuaige7/ESP32_RPS_Game/actions/runs/29669939600",
         "headSha": "3730095b6ddacd8bf00196251ae8aaa334730fbb",
         "runAt": "2026-07-19T02:16:22Z",
-        "ageHours": 2279.8
+        "ageHours": 2473.3
       },
       "release": {
         "status": "none"

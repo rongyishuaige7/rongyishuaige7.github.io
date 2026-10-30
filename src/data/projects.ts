@@ -52,11 +52,12 @@ export const toolGroups: ToolGroup[] = [
         href: "https://github.com/rongyishuaige7/dsh-spec"
       },
       {
-        slug: "tech-mentor",
-        name: "Tech Mentor",
-        summary: "讲解代码架构、数据流和关键实现，并检查理解程度。",
-        tags: ["Agent Skill", "Antigravity", "Shell"],
-        href: "https://github.com/rongyishuaige7/tech-mentor"
+        slug: "tech-mentor-studio",
+        name: "Tech Mentor Studio",
+        summary: "本地工作台：读仓库、提交和未提交改动，按架构意图、流转图、源码解剖和暗坑四个阶段带读。",
+        tags: ["Node.js", "Express", "Local-first"],
+        href: "https://github.com/rongyishuaige7/tech-mentor-studio",
+        caveat: "只在本机运行，需要自备模型代理。"
       },
       {
         slug: "problem-solution-recorder-oss",
@@ -111,7 +112,8 @@ export const toolShots: Record<string, { alt: string; label: string; fit?: "cont
   "devflow-recorder": { alt: "DevFlow Recorder 浏览器预览界面：今天的开发轨迹与活动时间线，条目标注为示例数据", label: "浏览器预览 · 示例数据", position: "0 0" },
   "pet-desktop-tauri": { alt: "Desktop Pet 陪伴页：三维小奶蛙站在动作预览区，页面标注为网页演示模式", label: "浏览器预览 · 内置奶蛙帧包" },
   "problem-solution-recorder-oss": { alt: "Problem Solution Recorder 看板：左侧筛选、中间记录列表、右侧记录详情，展示 7 条虚构示例记录", label: "看板 · 示例数据" },
-  "macos-memory-monitor": { alt: "Memory Monitor 主窗口内存状态页：75% 使用率仪表、最近一小时趋势，以及可用内存、系统保留、已压缩、磁盘交换四项读数", label: "主窗口 · 演示数据" }
+  "macos-memory-monitor": { alt: "Memory Monitor 主窗口内存状态页：75% 使用率仪表、最近一小时趋势，以及可用内存、系统保留、已压缩、磁盘交换四项读数", label: "主窗口 · 演示数据" },
+  "tech-mentor-studio": { alt: "Tech Mentor Studio 工作台：左栏项目文件树，中栏带行号的 Python 源码，右栏全景带读回答与分层架构图", label: "真实运行界面" }
 };
 
 // Hardware tiles come from the Hardware Lab index at build time; these only shorten titles
